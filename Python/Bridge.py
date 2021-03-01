@@ -21,7 +21,7 @@ class Bridge():
         tmp = ''
 
         #send data
-        self.ser.write('2'.encode())
+        #self.ser.write('2'.encode())
         
         # infinite loop to receive data
         while (True):

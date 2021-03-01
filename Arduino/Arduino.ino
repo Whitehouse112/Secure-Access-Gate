@@ -9,7 +9,23 @@
 
 BluetoothSerial SerialBT;
 
+// pins
 const int outPin=33;
+const int trigPin = 3;
+const int echoPin = 1;
+
+// distance
+long duration;
+int distance;
+
+// input symbol
+// 0:released, 1:pressed
+int inSymb;
+
+// states
+// 0:A, 1:B
+int iState;
+int futureState;
 
 void setup() {
   Serial.begin(115200);
@@ -17,7 +33,13 @@ void setup() {
   initCamera();
     
   pinMode(outPin, OUTPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
   digitalWrite(outPin, LOW);
+  digitalWrite(trigPin, LOW);
+
+  // initial state
+  iState = 0;
 }
 
 void callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
@@ -36,7 +58,7 @@ void callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
     int paramInt = stringRead.toInt() - 48;
     Serial.printf("\nparamInt: %d", paramInt);
     //setCameraParam(paramInt);
-    capture();
+    //capture();
   }
 }
 
@@ -89,9 +111,6 @@ void initCamera(){
     Serial.printf("\nCamera init failed with error 0x%x", err);
     ESP.restart();
   }
-  // set gray scale effect
-  //sensor_t * s = esp_camera_sensor_get();
-  //s->set_special_effect(s, 2);
 }
 
 void setCameraParam(int paramInt){
@@ -142,4 +161,52 @@ void writeSerialBT(camera_fb_t *fb){
 }
 
 void loop() {
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance= duration*0.034/2;
+  
+  // 1) Read external inputs and generate input symbols
+  // punto da cambiare quando si dovrà leggere il valore del sensore ultrasonico
+  int inval = distance;
+  if (inval > 40)
+    inSymb = 0;
+  else
+    inSymb = 1;
+
+  // 2) Future state estimation
+  switch(iState){
+    case 0:{
+      if(inSymb == 1) //distance < 40cm
+        futureState = 1;
+      if(inSymb == 0) //distance > 40cm
+        futureState = 0;
+      break;
+    }
+    case 1:{
+      if(inSymb == 1) //distance < 40cm
+        futureState = 1;
+      if(inSymb == 0) //distance > 40cm
+        futureState = 0;
+      break;
+    }     
+  }
+
+  // 3) OnEntry and onExit actions
+  if ((iState == 0) && (futureState == 1)){
+    if (Serial.available()) { 
+      capture();
+      delay(3000);
+    }
+  }
+
+  // 4) State transition [clock edge]
+  iState = futureState;
+
+  // 5) Output update
+  //switch(iState){
+  //    case 0: digitalWrite(outPin, HIGH); break;
+  //    case 1: digitalWrite(outPin, LOW); break;
+  //}
 }
