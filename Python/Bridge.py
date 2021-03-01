@@ -43,8 +43,8 @@ class Bridge():
             bytestream = io.BytesIO(b"".join(self.inbuffer))
             img = Image.open(bytestream)
             img.show()
-            img.save(f"{len(self.inbuffer)}.jpeg")
-            self.saveData()
+            img.save(f"..\\photos\\{len(self.inbuffer)}.jpeg")
+            #self.saveData()
             exit(0)
 
         print(f"Trasmission corrupted! Sending another request...")
