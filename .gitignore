@@ -1,5 +1,6 @@
 env/
 photos/
 train/
+.vscode/
 byte.txt
 integer.txt
