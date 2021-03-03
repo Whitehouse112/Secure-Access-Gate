@@ -38,7 +38,7 @@ paths:
         200:
           description: "Sucess"
         400:
-          description: "Invalid data"
+          description: "Invalid input data"
         409:
           description: "Gate already exist"
         500:
@@ -87,7 +87,12 @@ paths:
         200:
           description: "Success"
         400:
-          description: "invalid input data"
+          description: "Invalid input data"
+        409:
+          description: "Activity already exists"
+        500:
+          description: "Internal server error"
+
     put:
       tags:
       - "activity"
@@ -110,6 +115,12 @@ paths:
       responses:
         200:
           description: "Success"
+        400:
+          description: "Invalid input data"
+        404:
+          description: "No Activity found"
+        500:
+          desctiption: "Internal server error"
   
   /activity/{userId}:
     get:

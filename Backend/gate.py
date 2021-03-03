@@ -1,4 +1,8 @@
 class GateManager(object):
+    def getGate(self, userId):
+        #TODO: search the DB for all gates of userId
+        return []
+
     def addGate(self, gate):
         #TODO: add gate to the DB
         return True
@@ -9,4 +13,4 @@ class GateManager(object):
 
     def exists(self, gate):
         #TODO: check if gate already exists
-        return True
+        return False
