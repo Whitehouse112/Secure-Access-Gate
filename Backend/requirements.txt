@@ -1,3 +1,4 @@
 FLASK-WTF
 flask
+flask-restful
 PyJWT

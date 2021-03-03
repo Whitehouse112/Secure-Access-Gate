@@ -39,6 +39,10 @@ paths:
           description: "Sucess"
         400:
           description: "Invalid data"
+        409:
+          description: "Gate already exist"
+        500:
+          description: "Internal server error"
           
   /gate/{userId}:
     get:
