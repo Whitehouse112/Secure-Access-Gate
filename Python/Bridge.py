@@ -1,6 +1,7 @@
 import serial
 import urllib.request
 import io
+import os
 from time import sleep
 from PIL import Image
 
@@ -41,9 +42,13 @@ class Bridge():
             print(f"Image received")
             print(f"{len(self.inbuffer)} bytes\n")
             bytestream = io.BytesIO(b"".join(self.inbuffer))
+            #Show image
             img = Image.open(bytestream)
             img.show()
-            img.save(f"..\\photos\\{len(self.inbuffer)}.jpeg")
+            #Save image
+            dir_path = os.path.dirname(os.path.realpath(__file__))
+            img.save(f"{dir_path}\\photos\\{len(self.inbuffer)}.jpeg")
+            #Debug file
             #self.saveData()
             exit(0)
 
@@ -69,4 +74,3 @@ if __name__ == '__main__':
     br=Bridge()
     br.setup()
     br.loop()
-
