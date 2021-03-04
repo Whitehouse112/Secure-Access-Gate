@@ -35,8 +35,6 @@ void setup() {
   pinMode(outPin, OUTPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  digitalWrite(outPin, LOW);
-  digitalWrite(trigPin, LOW);
 
   // initial state
   iState = 0;
@@ -58,7 +56,6 @@ void callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
     int paramInt = stringRead.toInt() - 48;
     Serial.printf("\nparamInt: %d", paramInt);
     //setCameraParam(paramInt);
-    //capture();
   }
 }
 
@@ -161,14 +158,21 @@ void writeSerialBT(camera_fb_t *fb){
 }
 
 void loop() {
+ 
+  // 0) Setup ultrasonic sensor function
+  // Clears the trigPin condition
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
   duration = pulseIn(echoPin, HIGH);
-  distance= duration*0.034/2;
-  
+  // Calculating the distance
+  distance = duration * 0.034 / 2; 
+
   // 1) Read external inputs and generate input symbols
-  // punto da cambiare quando si dovrà leggere il valore del sensore ultrasonico
   int inval = distance;
   if (inval > 40)
     inSymb = 0;
