@@ -11,7 +11,7 @@ class ActivityManager(object):
         #TODO: check if activity has correct parameters
         return True
     
-    def updateActivity(self, userId, activityId, status)
+    def updateActivity(self, userId, activityId, status):
         #TODO: update activity
         return True
 

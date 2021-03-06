@@ -1,4 +1,4 @@
-class GateManager(object):
+class GateManager:
     def getGate(self, userId):
         #TODO: search the DB for all gates of userId
         return []

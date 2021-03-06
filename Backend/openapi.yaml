@@ -149,29 +149,29 @@ paths:
     post:
       tags:
       - "user"
-      summary: "Create user"
-      description: "This can only be done by the logged in user."
+      description: "Create a user"
       operationId: "createUser"
-      produces:
+      consumes:
       - "application/xml"
       - "application/json"
       parameters:
       - in: "body"
         name: "body"
         description: "Created user object"
-        required: true
+        required: True
         schema:
           $ref: "#/definitions/User"
       responses:
-        default:
-          description: "successful operation"
+        200:
+          description: "Success"
+        400:
+          description: "Invalid input data"
 
   /user/login:
     get:
       tags:
       - "user"
-      summary: "Logs user into the system"
-      description: ""
+      description: "Logs user into the system"
       operationId: "loginUser"
       produces:
       - "application/xml"
@@ -180,16 +180,16 @@ paths:
       - name: "username"
         in: "query"
         description: "The user name for login"
-        required: true
+        required: True
         type: "string"
       - name: "password"
         in: "query"
         description: "The password for login in clear text"
-        required: true
+        required: True
         type: "string"
       responses:
-        "200":
-          description: "successful operation"
+        200:
+          description: "Success"
           schema:
             type: "string"
           headers:
@@ -201,7 +201,9 @@ paths:
               type: "string"
               format: "date-time"
               description: "date in UTC when token expires"
-        "400":
+        400:
+          description: "Invalid input data"
+        401:
           description: "Invalid username/password supplied"
           
   /user/logout:
