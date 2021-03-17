@@ -18,10 +18,30 @@ schemes:
 - "http"
 paths:
   /gate:
+    get:
+      tags:
+      - "gate"
+      description: "Get all Gates of the user"
+      security:
+        - jwt: []
+      operationId: "getGate"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Gate'
+        404:
+          description: "No Gate found"
+        400:
+          description: "Invalid input data"
     post:
       tags:
        - "gate"
       description: "Add a new Gate for the user"
+      security:
+        - jwt: []
       operationId: "addGate"
       consumes:
       - "application/json"
@@ -44,34 +64,32 @@ paths:
         500:
           description: "Internal server error"
           
-  /gate/{userId}:
+  /activity:
     get:
       tags:
-      - "gate"
-      description: "Get all Gates of the user"
-      operationId: "getGate"
-      parameters:
-        - name: userId
-          in: path
-          required: True
-          type: string
+      - "activity"
+      description: "Get all Activities of the user"
+      security:
+        - jwt: []
+      operationId: "getActivities"
       responses:
         200:
           description: "Success"
           schema:
             type: array
             items:
-              $ref: '#/definitions/Gate'
+              $ref: '#/definitions/Activity'
         404:
-          description: "No Gate found"
+          description: "No activity found"
         400:
           description: "Invalid input data"
           
-  /activity:
     post:
       tags:
       - "activity"
       description: "Add an activity of a gate"
+      security:
+        - jwt: []
       operationId: "addActivity"
       consumes:
       - "application/json"
@@ -97,6 +115,8 @@ paths:
       tags:
       - "activity"
       description: "Updates the state of an activity"
+      security:
+        - jwt: []
       operationId: "updateActivity"
       consumes:
       - "application/json"
@@ -120,30 +140,7 @@ paths:
         404:
           description: "No Activity found"
         500:
-          desctiption: "Internal server error"
-  
-  /activity/{userId}:
-    get:
-      tags:
-      - "activity"
-      description: "Get all Activities of the user"
-      operationId: "getActivities"
-      parameters:
-        - name: userId
-          in: path
-          required: True
-          type: string
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Activity'
-        404:
-          description: "No activity found"
-        400:
-          description: "Invalid input data"
+          description: "Internal server error"
           
   /user:
     post:
@@ -291,7 +288,30 @@ paths:
           description: "Invalid username supplied"
         "404":
           description: "User not found"
-          
+
+  /jwt:
+    get:
+      description: "Refresh the expiry jwt"
+      operationId: "refreshJWT"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      parameters:
+        - name: jwtRefreshToken
+          in: body
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: "Success"
+        400:
+          description: "Invalid input data"
+        403:
+          description: "Token is invalid"
+        
+
+
 securityDefinitions:
   auth:
     type: "oauth2"
@@ -300,9 +320,9 @@ securityDefinitions:
     scopes:
       write:pets: "modify pets in your account"
       read:pets: "read your pets"
-  api_key:
+  jwt:
     type: "apiKey"
-    name: "api_key"
+    name: "jwt_token"
     in: "header"
     
 definitions:
@@ -380,14 +400,3 @@ definitions:
         description: "User Status"
     xml:
       name: "User"
-
-  ApiResponse:
-    type: "object"
-    properties:
-      code:
-        type: "integer"
-        format: "int32"
-      type:
-        type: "string"
-      message:
-        type: "string"

@@ -2,5 +2,6 @@ env/
 Python/photos/
 train/
 .vscode/
+Backend/test.py
 byte.txt
 integer.txt

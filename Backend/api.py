@@ -37,7 +37,6 @@ def token_required(f):
             #current_user = userManager.getUser(data['user'])
             current_user = data['user']
         except:
-            print("We broke something")
             return "Token is invalid", 403
 
         return f(current_user, *args, **kwargs)
@@ -45,7 +44,7 @@ def token_required(f):
     return decorated
 
 
-class AddGate(Resource):
+class GateAPI(Resource):
     @token_required
     def post(current_user, self):
         content = request.get_json()
@@ -59,7 +58,8 @@ class AddGate(Resource):
             return f"Success + {current_user}", 200
         else:
             return "Internal server error", 500
-      
+
+    @token_required
     def get(current_user, self, userId):
         if not userManager.checkUser(userId):
             return "Invalid input data", 400
@@ -70,8 +70,9 @@ class AddGate(Resource):
         else:
             return "No Gate found", 404
 
-class UpdateActivity(Resource):
-    def post(self):
+class ActivityAPI(Resource):
+    @token_required
+    def post(current_user, self):
         content = request.get_json()
         if not activity.checkActivity(content):
             return "Invalid input data", 400
@@ -84,7 +85,8 @@ class UpdateActivity(Resource):
         else:
             return "Internal server error", 500
 
-    def put(self):
+    @token_required
+    def put(current_user, self):
         activityId = request.get_json()['activityId']
         userId = request.get_json()['userId']
         status = request.get_json()['status']
@@ -100,12 +102,12 @@ class UpdateActivity(Resource):
         else:
             return "Success", 200
 
-class CheckActivity(Resource):
-    def get(self, userId):
-        if not user.checkUser(userId):
+    @token_required
+    def get(current_user, self):
+        if not user.checkUser(current_user):
             return "Invalid input data", 400
 
-        ret = activity.getActivity(userId)
+        ret = activity.getActivity(current_user)
         if ret != []:
             return ret, 200
         else:
@@ -137,19 +139,38 @@ class LoginUser(Resource):
             jwt_refresh = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(days=30)}, app.config['SECRET_KEY'])
             #TODO: setting to be tuned, 24 hours for example
             
-            jwt_expiry = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=90)}, app.config['SECRET_KEY'])
+            jwt_expiry = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
             return jsonify({'jwt_token':jwt_refresh, 'jwt_token_expiry':jwt_expiry})
 
         return "Invalid username/password supplied", 401
 
 class LogoutUser(Resource):
+    #TODO: remove the refresh token form the info of the user
     pass
 
-api.add_resource(AddGate, f'{basePath}/gate')
-api.add_resource(CheckGate, f'{basePath}/gate/<string:userId>')
-api.add_resource(UpdateActivity, f'{basePath}/activity')
-api.add_resource(CheckActivity, f'{basePath}/activity/<string:userId>')
+class RefreshJWT(Resource):
+    def get(self):
+        token = request.args.get('jwt_refresh')
+
+        if not token:
+            return "Invalid input data", 403
+
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = data['user']
+            #TODO: check on database if user has the same refresh token
+            if not userManager.checkUser(current_user):
+                return "Token is invalid", 403
+        except:
+            return "Token is invalid", 403
+        
+        jwt_expiry = jwt.encode({'user':current_user, 'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+        return jsonify({'jwt_token_expiry':jwt_expiry})
+
+api.add_resource(GateAPI, f'{basePath}/gate')
+api.add_resource(ActivityAPI, f'{basePath}/activity')
 api.add_resource(LoginUser, f'{basePath}/login')
+api.add_resource(RefreshJWT, f'{basePath}/jwt')
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=8080, debug=True)
