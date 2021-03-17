@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = 'Secret'
 basePath = '/api/v1'
 
 gate = GateManager()
-userManage = UserManager()
+userManager = UserManager()
 activity = ActivityManager()
 
 STATUS = ['granted', 'denied', 'ignored', 'pending', 'reported']
@@ -32,10 +32,12 @@ def token_required(f):
             return "Token is missing", 403
 
         try:
-            data = jwt.decode(token, app.config['SECRET_KEY'])
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
             #TODO: correct with actual user db information
-            current_user = userManager.getUser(data['user'])
+            #current_user = userManager.getUser(data['user'])
+            current_user = data['user']
         except:
+            print("We broke something")
             return "Token is invalid", 403
 
         return f(current_user, *args, **kwargs)
@@ -45,7 +47,7 @@ def token_required(f):
 
 class AddGate(Resource):
     @token_required
-    def post(self, current_user):
+    def post(current_user, self):
         content = request.get_json()
         if not gate.checkGate(content):
             return "Invalid input data", 400
@@ -54,13 +56,12 @@ class AddGate(Resource):
             return "Gate already exists", 409
 
         if gate.addGate(content):
-            return "Success", 200
+            return f"Success + {current_user}", 200
         else:
             return "Internal server error", 500
       
-class CheckGate(Resource):
-    def get(self, userId):
-        if not user.checkUser(userId):
+    def get(current_user, self, userId):
+        if not userManager.checkUser(userId):
             return "Invalid input data", 400
 
         ret = gate.getGate(userId)
@@ -133,9 +134,11 @@ class LoginUser(Resource):
             return "Invalid username/password supplied", 401
 
         if check_password_hash(user.password, auth.password):
+            jwt_refresh = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(days=30)}, app.config['SECRET_KEY'])
             #TODO: setting to be tuned, 24 hours for example
-            token = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
-            return jsonify({'token':token})
+            
+            jwt_expiry = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=90)}, app.config['SECRET_KEY'])
+            return jsonify({'jwt_token':jwt_refresh, 'jwt_token_expiry':jwt_expiry})
 
         return "Invalid username/password supplied", 401
 
