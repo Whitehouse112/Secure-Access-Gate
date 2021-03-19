@@ -149,8 +149,8 @@ class LogoutUser(Resource):
     pass
 
 class RefreshJWT(Resource):
-    def get(self):
-        token = request.args.get('jwt_refresh')
+    def post(self):
+        token = request.form['jwt_refresh']
 
         if not token:
             return "Invalid input data", 403

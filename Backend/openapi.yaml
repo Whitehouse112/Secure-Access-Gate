@@ -290,10 +290,10 @@ paths:
           description: "User not found"
 
   /jwt:
-    get:
+    post:
       description: "Refresh the expiry jwt"
       operationId: "refreshJWT"
-      consumes:
+      produces:
       - "application/json"
       - "application/xml"
       parameters:
