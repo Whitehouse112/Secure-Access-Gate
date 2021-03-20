@@ -60,11 +60,11 @@ class GateAPI(Resource):
             return "Internal server error", 500
 
     @token_required
-    def get(current_user, self, userId):
-        if not userManager.checkUser(userId):
+    def get(current_user, self):
+        if not userManager.checkUser(current_user):
             return "Invalid input data", 400
 
-        ret = gate.getGate(userId)
+        ret = gate.getGate(current_user)
         if ret != []:
             return ret, 200
         else:

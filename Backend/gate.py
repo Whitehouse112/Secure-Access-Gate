@@ -1,7 +1,12 @@
+from flask import jsonify
+
 class GateManager:
     def getGate(self, userId):
         #TODO: search the DB for all gates of userId
-        return []
+        
+        ret = [{'name':'primo', 'location':'casa', 'state':'open', 'id':'1'}, 
+        {'name':'secondo', 'location':'lavoro', 'state':'closed', 'id':'2'}]
+        return ret
 
     def addGate(self, gate):
         #TODO: add gate to the DB
