@@ -147,10 +147,28 @@ class LogoutUser(Resource):
     @token_required
     def get(current_user, self):
         if not user.checkUser(current_user):
-            return "Invalid input data", 400
+            return "User not found", 404
 
         if user.logoutUser(current_user):
             return ret, 200
+        else:
+            return "Internal server error", 500
+
+class UpdateLocation(Resource):
+    @token_required
+    def post(current_user, self):
+        if not user.checkUser(current_user):
+            return "User not found", 404
+
+        content = request.get_json()
+
+        #TODO: insert location checks, return 400 if not OK
+
+        if not user.checkLocation(content):
+            return "Location already exists", 409
+
+        if user.updateLocation(content):
+            return "Success", 200
         else:
             return "Internal server error", 500
 
@@ -176,6 +194,7 @@ class RefreshJWT(Resource):
 api.add_resource(GateAPI, f'{basePath}/gate')
 api.add_resource(ActivityAPI, f'{basePath}/activity')
 api.add_resource(LoginUser, f'{basePath}/login')
+api.add_resource(LogoutUser, f'{basePath}/logout')
 api.add_resource(RefreshJWT, f'{basePath}/jwt')
 
 if __name__ == "__main__":

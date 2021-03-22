@@ -13,6 +13,7 @@ tags:
   description: "Access to Gate Activities"
 - name: "user"
   description: "Operations about user"
+
 schemes:
 - "https"
 - "http"
@@ -21,7 +22,7 @@ paths:
     get:
       tags:
       - "gate"
-      description: "Get all Gates of the user"
+      summary: "Get all Gates of the user"
       security:
         - jwt: []
       operationId: "getGate"
@@ -36,10 +37,11 @@ paths:
           description: "No Gate found"
         400:
           description: "Invalid input data"
+
     post:
       tags:
        - "gate"
-      description: "Add a new Gate for the user"
+      summary: "Add a new Gate for the user"
       security:
         - jwt: []
       operationId: "addGate"
@@ -68,7 +70,7 @@ paths:
     get:
       tags:
       - "activity"
-      description: "Get all Activities of the user"
+      summary: "Get all Activities of the user"
       security:
         - jwt: []
       operationId: "getActivities"
@@ -87,7 +89,7 @@ paths:
     post:
       tags:
       - "activity"
-      description: "Add an activity of a gate"
+      summary: "Add an activity of a gate"
       security:
         - jwt: []
       operationId: "addActivity"
@@ -114,7 +116,7 @@ paths:
     put:
       tags:
       - "activity"
-      description: "Updates the state of an activity"
+      summary: "Updates the state of an activity"
       security:
         - jwt: []
       operationId: "updateActivity"
@@ -146,7 +148,7 @@ paths:
     post:
       tags:
       - "user"
-      description: "Create a user"
+      summary: "Create a user"
       operationId: "createUser"
       consumes:
       - "application/xml"
@@ -163,12 +165,14 @@ paths:
           description: "Success"
         400:
           description: "Invalid input data"
+        409:
+          description: "User laready exists"
 
   /user/login:
     get:
       tags:
       - "user"
-      description: "Logs user into the system"
+      summary: "Logs user into the system"
       operationId: "loginUser"
       produces:
       - "application/xml"
@@ -208,15 +212,47 @@ paths:
       tags:
       - "user"
       summary: "Logs out current logged in user session"
-      description: ""
       operationId: "logoutUser"
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters: []
+      security:
+        - jwt: []
       responses:
-        default:
-          description: "successful operation"
+        200:
+          description: "Success"
+        404:
+          description: "User not foud"
+        500:
+          description: "Internal server error"
+  
+  /user/location:
+    post:
+      tags:
+      - "user"
+      summary: "Send the current location of the user"
+      security:
+        - jwt: []
+      operationId: "updateLocation"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      parameters:
+        - name: lastLocation
+          in: body
+          description: "Last recorded user location"
+          required: True
+          schema:
+            $ref: '#/definitions/Location'
+      responses:
+        200:
+          description: "Success"
+        400:
+          description: "Invalid input data"
+        404:
+          description: "User not found"
+        409:
+          description: "Location alredy exists"
+        500:
+          description: "Internal server error"
+          
   /user/{username}:
     get:
       tags:
@@ -353,7 +389,7 @@ definitions:
         $ref: '#/definitions/Image'
       access:
         $ref: '#/definitions/Status'
-      date:
+      datetime:
         type: string
         format: date-time
       gate:
@@ -375,6 +411,19 @@ definitions:
     - "ignored"
     - "pending"
     - "reported"
+    
+  Location:
+    type: object
+    properties:
+      latitude:
+        type: string
+        maxLength: 16
+      longitude:
+        type: string
+        maxLength: 16
+      datetime:
+        type: string
+        format: date-time
 
   User:
     type: "object"
