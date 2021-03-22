@@ -118,7 +118,6 @@ class CreateUser(Resource):
         content = request.get_json()
 
         hashed_password = generate_password_hash(content['password'], method='sha256')
-
         #TODO: create the User, and create the new database instance
         #TODO: correct the openAPI, should it return a json object? containing what?
         return 'Success', 200
@@ -145,8 +144,15 @@ class LoginUser(Resource):
         return "Invalid username/password supplied", 401
 
 class LogoutUser(Resource):
-    #TODO: remove the refresh token form the info of the user
-    pass
+    @token_required
+    def get(current_user, self):
+        if not user.checkUser(current_user):
+            return "Invalid input data", 400
+
+        if user.logoutUser(current_user):
+            return ret, 200
+        else:
+            return "Internal server error", 500
 
 class RefreshJWT(Resource):
     def post(self):
