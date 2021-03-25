@@ -32,6 +32,5 @@ class User:
         self.password = password
 
     def __repr__(self):
+        #TODO: complete when you have the definitive form for the user object
         return f'<User: {self.user}>'
-
-

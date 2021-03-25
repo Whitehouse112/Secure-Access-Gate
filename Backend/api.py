@@ -29,7 +29,7 @@ def token_required(f):
             token = request.headers['x-access-token']
 
         if not token:
-            return "Token is missing", 403
+            return "Token is missing or invalid", 401
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
@@ -37,7 +37,7 @@ def token_required(f):
             #current_user = userManager.getUser(data['user'])
             current_user = data['user']
         except:
-            return "Token is invalid", 403
+            return "Token is missing or invalid", 401
 
         return f(current_user, *args, **kwargs)
 
@@ -138,7 +138,7 @@ class LoginUser(Resource):
             jwt_refresh = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(days=30)}, app.config['SECRET_KEY'])
             #TODO: setting to be tuned, 24 hours for example
             
-            jwt_expiry = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+            jwt_expiry = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
             return jsonify({'jwt_token':jwt_refresh, 'jwt_token_expiry':jwt_expiry})
 
         return "Invalid username/password supplied", 401
@@ -188,7 +188,7 @@ class RefreshJWT(Resource):
         except:
             return "Token is invalid", 403
         
-        jwt_expiry = jwt.encode({'user':current_user, 'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+        jwt_expiry = jwt.encode({'user':current_user, 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
         return jsonify({'jwt_token_expiry':jwt_expiry})
 
 api.add_resource(GateAPI, f'{basePath}/gate')

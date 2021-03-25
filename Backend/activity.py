@@ -18,3 +18,12 @@ class ActivityManager(object):
     def exists(self, activity):
         #TODO: check if activity already exists
         return False
+
+class Activity:
+    def __init__(self, access, date):
+        self.access = access
+        self.date = date
+
+    def __repr__(self):
+        #TODO: complete when you have the definitive form for the access object
+        return f'<Access: {self.access}>'
