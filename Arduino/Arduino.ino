@@ -11,12 +11,7 @@ BluetoothSerial SerialBT;
 
 // pins
 const int outPin=33;
-const int trigPin = 3;
-const int echoPin = 1;
-
-// distance
-long duration;
-int distance;
+const int sensorPin = 13;
 
 // input symbol
 // 0:released, 1:pressed
@@ -27,14 +22,15 @@ int inSymb;
 int iState;
 int futureState;
 
+int busy = 0;
+
 void setup() {
   Serial.begin(115200);
   initBT();
   initCamera();
     
   pinMode(outPin, OUTPUT);
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  pinMode(sensorPin, INPUT);
 
   // initial state
   iState = 0;
@@ -133,6 +129,7 @@ void setCameraParam(int paramInt){
 }
 
 void capture(){
+  busy = 1;
   Serial.print("\n\nCapturing...");
   camera_fb_t *fb = NULL;
   esp_err_t res = ESP_OK;
@@ -144,37 +141,23 @@ void capture(){
   if(fb->format != PIXFORMAT_JPEG){
     return;
   }
-  Serial.print("\nSending image...");
   writeSerialBT(fb);
   esp_camera_fb_return(fb);
+  busy = 0;
 }
 
 void writeSerialBT(camera_fb_t *fb){
-  Serial.printf("\nStart sending %d bytes", fb->len);
-  //fb->buf = &fb->buf[100000];
-  SerialBT.write(fb->buf, fb->len);
   SerialBT.flush();
+  Serial.printf("\nStart sending %d bytes", fb->len);
+  SerialBT.write(fb->buf, fb->len);
   Serial.print("\nSent\n");
 }
 
 void loop() {
  
-  // 0) Setup ultrasonic sensor function
-  // Clears the trigPin condition
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  // Reads the echoPin, returns the sound wave travel time in microseconds
-  duration = pulseIn(echoPin, HIGH);
-  // Calculating the distance
-  distance = duration * 0.034 / 2; 
-
   // 1) Read external inputs and generate input symbols
-  int inval = distance;
-  if (inval > 40)
+  int inval = digitalRead(sensorPin);
+  if (inval == 1)
     inSymb = 0;
   else
     inSymb = 1;
@@ -199,18 +182,13 @@ void loop() {
 
   // 3) OnEntry and onExit actions
   if ((iState == 0) && (futureState == 1)){
-    if (Serial.available()) { 
+    if (busy == 0)
       capture();
-      delay(3000);
-    }
+    else
+      Serial.print("\ncamera busy");
   }
 
   // 4) State transition [clock edge]
   iState = futureState;
 
-  // 5) Output update
-  //switch(iState){
-  //    case 0: digitalWrite(outPin, HIGH); break;
-  //    case 1: digitalWrite(outPin, LOW); break;
-  //}
 }
