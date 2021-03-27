@@ -23,6 +23,7 @@ class UserManager:
 
     def updateLocation(self, location):
         #TODO: update location of the user
+        print(location)
         return True
 
 class User:

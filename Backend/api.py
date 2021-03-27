@@ -19,7 +19,6 @@ activity = ActivityManager()
 
 STATUS = ['granted', 'denied', 'ignored', 'pending', 'reported']
 
-
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -42,7 +41,6 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
 
     return decorated
-
 
 class GateAPI(Resource):
     @token_required
@@ -135,9 +133,7 @@ class LoginUser(Resource):
             return "Invalid username/password supplied", 401
 
         if check_password_hash(user.password, auth.password):
-            jwt_refresh = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(days=30)}, app.config['SECRET_KEY'])
-            #TODO: setting to be tuned, 24 hours for example
-            
+            jwt_refresh = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(days=30)}, app.config['SECRET_KEY'])   
             jwt_expiry = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
             return jsonify({'jwt_token':jwt_refresh, 'jwt_token_expiry':jwt_expiry})
 
@@ -157,17 +153,17 @@ class LogoutUser(Resource):
 class UpdateLocation(Resource):
     @token_required
     def post(current_user, self):
-        if not user.checkUser(current_user):
+        if not userManager.checkUser(current_user):
             return "User not found", 404
 
-        content = request.get_json()
+        content = request.form
 
         #TODO: insert location checks, return 400 if not OK
 
-        if not user.checkLocation(content):
+        if not userManager.checkLocation(content):
             return "Location already exists", 409
 
-        if user.updateLocation(content):
+        if userManager.updateLocation(content):
             return "Success", 200
         else:
             return "Internal server error", 500
@@ -177,24 +173,26 @@ class RefreshJWT(Resource):
         token = request.form['jwt_refresh']
 
         if not token:
-            return "Invalid input data", 403
+            return "Invalid input data", 400
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
             current_user = data['user']
             #TODO: check on database if user has the same refresh token
             if not userManager.checkUser(current_user):
-                return "Token is invalid", 403
+                return "Token is invalid", 401
         except:
-            return "Token is invalid", 403
+            return "Token is invalid", 401
         
         jwt_expiry = jwt.encode({'user':current_user, 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
         return jsonify({'jwt_token_expiry':jwt_expiry})
 
+#TODO: Correct all the paths or the openapi
 api.add_resource(GateAPI, f'{basePath}/gate')
 api.add_resource(ActivityAPI, f'{basePath}/activity')
 api.add_resource(LoginUser, f'{basePath}/login')
 api.add_resource(LogoutUser, f'{basePath}/logout')
+api.add_resource(UpdateLocation, f'{basePath}/location')
 api.add_resource(RefreshJWT, f'{basePath}/jwt')
 
 if __name__ == "__main__":
