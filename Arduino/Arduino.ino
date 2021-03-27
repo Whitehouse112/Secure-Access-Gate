@@ -12,6 +12,7 @@ BluetoothSerial SerialBT;
 // pins
 const int outPin=33;
 const int sensorPin = 13;
+const int flash = 4;
 
 // input symbol
 // 0:released, 1:pressed
@@ -30,6 +31,7 @@ void setup() {
   initCamera();
     
   pinMode(outPin, OUTPUT);
+  pinMode(flash, OUTPUT);
   pinMode(sensorPin, INPUT);
 
   // initial state
@@ -137,7 +139,10 @@ void capture(){
   Serial.print("\n\nCapturing...");
   camera_fb_t *fb = NULL;
   esp_err_t res = ESP_OK;
+  digitalWrite(flash, HIGH);
   fb = esp_camera_fb_get();
+  delay(500);
+  digitalWrite(flash, LOW);
   if(!fb){
     esp_camera_fb_return(fb);
     return;
