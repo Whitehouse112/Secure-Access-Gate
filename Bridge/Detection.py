@@ -4,12 +4,14 @@ from skimage.io import imread
 from skimage.filters import threshold_otsu
 from skimage import measure
 from skimage.measure import regionprops
-
+import os
 
 def detection(img):
     # Leggo l'immagine e la converto in scala di grigio.
-    gray = imread(img, as_gray=True)
-
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    gray = imread(f"{dir_path}\\files\\image.jpeg", as_gray=True)
+    print("immagine aperta")
+    exit(0)
     # Plot 1: da una parte l'immagine in scala di grigio, dall'altra binarizzata.
     fig, (ax1, ax2) = plt.subplots(1, 2)
     ax1.imshow(gray, cmap="gray")

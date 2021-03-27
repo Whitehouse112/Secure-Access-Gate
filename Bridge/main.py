@@ -9,7 +9,7 @@ def main():
 
     while (True):
         img = Bridge.loop(ser)
-        if (img != 0):
+        if (img != None):
             possible_plates = Detection.detection(img)
             if (len(possible_plates) != 0):
                 chars, x_chars = Segmentation.segmentation(possible_plates)

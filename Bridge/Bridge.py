@@ -12,7 +12,7 @@ def setup():
 
     # Apro il file di configurazione e leggo il parametro [PORTA]
     filename = f"{dir_path}\\files\\config.txt"
-    file = open(filename, 'rb')
+    file = open(filename, 'r')
     PORTNAME= file.readline()
 
     # Apro la porta seriale
@@ -49,11 +49,11 @@ def useData(inbuffer, ser):
         bytestream = io.BytesIO(b"".join(inbuffer))
         img = Image.open(bytestream)
         # Salvo l'immagine
-        img.save(f"{dir_path}\\files\\{len(inbuffer)}.jpeg")
+        img.save(f"{dir_path}\\files\\image.jpeg")
         inbuffer.clear
-        return img
+        return 0
     else:
         print(f"Trasmission corrupted! Sending another request...")
         inbuffer.clear
         ser.write('0'.encode())
-        return 0
+        return None
