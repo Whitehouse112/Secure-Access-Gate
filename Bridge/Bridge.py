@@ -1,71 +1,59 @@
 import serial
-import urllib.request
 import io
 import os
 from time import sleep
 from PIL import Image
 
-## configuration
-PORTNAME='COM4'
-eof=b'\xff\xd9'
+dir_path = os.path.dirname(os.path.realpath(__file__))
+eof = b'\xff\xd9'
 
-class Bridge():
+def setup():
+    global dir_path
 
-    def setup(self):
-        # open serial port in
-        self.ser = serial.Serial(PORTNAME, 115200, timeout=0)
-        print(f"\n{PORTNAME} port open\n")
-        self.inbuffer=[]
-        self.lastchar = ''
+    # Apro il file di configurazione e leggo il parametro [PORTA]
+    filename = f"{dir_path}\\files\\config.txt"
+    file = open(filename, 'rb')
+    PORTNAME= file.readline()
 
-    def loop(self):
-        tmp = ''
-       
-        # infinite loop to receive data
-        while (True):
-            while(self.ser.in_waiting>0):     
-                self.lastchar = self.ser.read(1)
-                self.inbuffer.append(self.lastchar)
-                if(self.ser.in_waiting == 0 and tmp != ""):
-                    tmp += self.lastchar
-                else:
-                    tmp = self.lastchar
-            if(self.ser.in_waiting == 0 and tmp==eof):
-                tmp=""
-                self.useData()
+    # Apro la porta seriale
+    ser = serial.Serial(PORTNAME, 115200, timeout=0)
+    print(f"\n{PORTNAME} port open\n")
+    return ser
+    
 
-    def useData(self):
-        if(self.inbuffer[0] == b'\xff'):
-            print(f"Image received")
-            print(f"{len(self.inbuffer)} bytes\n")
-            bytestream = io.BytesIO(b"".join(self.inbuffer))
-            #Show image
-            img = Image.open(bytestream)
-            img.show()
-            #Save image
-            dir_path = os.path.dirname(os.path.realpath(__file__))
-            img.save(f"{dir_path}\\photos\\{len(self.inbuffer)}.jpeg")
-            self.inbuffer = []
+def loop(ser):
+    global eof
+    inbuffer=[]
+    lastchar = ''
+    tmp = ''
+    
+    # Loop infinito per ricevere i dati dalla seriale
+    while(ser.in_waiting>0):     
+        lastchar = ser.read(1)
+        inbuffer.append(lastchar)
+        if(ser.in_waiting == 0 and tmp != ""):
+            tmp += lastchar
         else:
-            print(f"Trasmission corrupted! Sending another request...")
-            self.inbuffer.clear
-            sleep(3)
-            self.ser.write('0'.encode())
+            tmp = lastchar
+    if(ser.in_waiting == 0 and tmp==eof):
+        tmp=""
+        return useData(inbuffer, ser)
 
-    def saveData(self):
-        #save byte
-        f_b = open("byte.txt", "a+")
-        f_b.write(f"\n\n------------- UXGA 10 {len(self.inbuffer)}-------------\n")
-        f_b.write((str)(b"".join(self.inbuffer)))
-        f_b.close()
-        #convert byte to int and save
-        f_i = open("integer.txt", "a+")
-        f_i.write(f"\n\n------------- UXGA 10 {len(self.inbuffer)}-------------\n")
-        integer = [int.from_bytes(x, "big") for x in self.inbuffer]
-        f_i.write("".join((str)(integer)))
-        f_i.close()
+def useData(inbuffer, ser):
+    global dir_path
 
-if __name__ == '__main__':
-    br=Bridge()
-    br.setup()
-    br.loop()
+    if(inbuffer[0] == b'\xff'):
+        # Converto il mio flusso di byte in un'immagine
+        print(f"Image received")
+        print(f"{len(inbuffer)} bytes\n")
+        bytestream = io.BytesIO(b"".join(inbuffer))
+        img = Image.open(bytestream)
+        # Salvo l'immagine
+        img.save(f"{dir_path}\\files\\{len(inbuffer)}.jpeg")
+        inbuffer.clear
+        return img
+    else:
+        print(f"Trasmission corrupted! Sending another request...")
+        inbuffer.clear
+        ser.write('0'.encode())
+        return 0
