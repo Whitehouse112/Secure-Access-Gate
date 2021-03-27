@@ -6,7 +6,7 @@ from time import sleep
 from PIL import Image
 
 ## configuration
-PORTNAME='COM5'
+PORTNAME='COM4'
 eof=b'\xff\xd9'
 
 class Bridge():
@@ -20,10 +20,7 @@ class Bridge():
 
     def loop(self):
         tmp = ''
-
-        #send data
-        #self.ser.write('2'.encode())
-        
+       
         # infinite loop to receive data
         while (True):
             while(self.ser.in_waiting>0):     
@@ -48,14 +45,12 @@ class Bridge():
             #Save image
             dir_path = os.path.dirname(os.path.realpath(__file__))
             img.save(f"{dir_path}\\photos\\{len(self.inbuffer)}.jpeg")
-            #Debug file
-            #self.saveData()
-            exit(0)
-
-        print(f"Trasmission corrupted! Sending another request...")
-        self.inbuffer.clear
-        sleep(3)
-        self.ser.write('0'.encode())
+            self.inbuffer = []
+        else:
+            print(f"Trasmission corrupted! Sending another request...")
+            self.inbuffer.clear
+            sleep(3)
+            self.ser.write('0'.encode())
 
     def saveData(self):
         #save byte
