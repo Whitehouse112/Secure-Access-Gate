@@ -3,9 +3,11 @@ import io
 import os
 from time import sleep
 from PIL import Image
+import numpy as np
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 eof = b'\xff\xd9'
+inbuffer=[]
 
 def setup():
     global dir_path
@@ -13,7 +15,8 @@ def setup():
     # Apro il file di configurazione e leggo il parametro [PORTA]
     filename = f"{dir_path}\\files\\config.txt"
     file = open(filename, 'r')
-    PORTNAME= file.readline()
+    PORTNAME= file.readline().split(',')[0]
+    file.close()
 
     # Apro la porta seriale
     ser = serial.Serial(PORTNAME, 115200, timeout=0)
@@ -23,7 +26,7 @@ def setup():
 
 def loop(ser):
     global eof
-    inbuffer=[]
+    global inbuffer
     lastchar = ''
     tmp = ''
     
@@ -37,10 +40,12 @@ def loop(ser):
             tmp = lastchar
     if(ser.in_waiting == 0 and tmp==eof):
         tmp=""
-        return useData(inbuffer, ser)
+        return useData(ser)
 
-def useData(inbuffer, ser):
+
+def useData(ser):
     global dir_path
+    global inbuffer
 
     if(inbuffer[0] == b'\xff'):
         # Converto il mio flusso di byte in un'immagine
@@ -48,12 +53,23 @@ def useData(inbuffer, ser):
         print(f"{len(inbuffer)} bytes\n")
         bytestream = io.BytesIO(b"".join(inbuffer))
         img = Image.open(bytestream)
+
         # Salvo l'immagine
         img.save(f"{dir_path}\\files\\image.jpeg")
         inbuffer.clear
-        return 0
+
+        # Converto l'immagine in formato openCV
+        return np.array(img) 
     else:
-        print(f"Trasmission corrupted! Sending another request...")
+        return serialWrite(ser, '0')
+
+
+def serialWrite(ser, code):
+    global inbuffer
+    
+    if code == 0:
+        print(f"Something went wrong...sending another request")
         inbuffer.clear
-        ser.write('0'.encode())
-        return None
+        ser.write(code.encode())
+    
+    return None

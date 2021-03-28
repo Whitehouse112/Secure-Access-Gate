@@ -1,21 +1,18 @@
 import Bridge
-import Detection
-import Segmentation
 import Prediction
 
 def main():
 
     ser = Bridge.setup()
-
     while (True):
         img = Bridge.loop(ser)
-        if (img != None):
-            possible_plates = Detection.detection(img)
-            if (len(possible_plates) != 0):
-                chars, x_chars = Segmentation.segmentation(possible_plates)
-                if (len(possible_plates) != 0):
-                    model = Prediction.setup()
-                    plate = Prediction.prediction(model, chars, x_chars)
+        if img is not None:
+            plate = Prediction.detection(img)
+            if plate is None:
+                print("No plate found")
+                Bridge.serialWrite(ser, '0')
+            else:
+                print(f"plate found: {plate}")
 
 if __name__ == '__main__':
     main()

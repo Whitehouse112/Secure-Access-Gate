@@ -1,36 +1,79 @@
-import Segmentation
-import pickle
+import cv2
+import imutils
+import pytesseract
+import numpy as np
+import os
 
-def setup():
-    print("Loading model...")
-    filename = './files/model.sav'
-    model = pickle.load(open(filename, 'rb'))
-    print('Model loaded')
-    return model
+dir_path = os.path.dirname(os.path.realpath(__file__))
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-def prediction(model, chars, x_chars):
+def prediction(img):
 
-    classifications = []
-    plate = ''
-    ordered_plate = ''
+    # Apro il file di configurazione e leggo il parametro [PORTA]
+    filename = f"{dir_path}\\files\\config.txt"
+    file = open(filename, 'r')
+    lang= file.readline().split(',')[1]
+    file.close()
 
-    for character in chars:
-        character = character.reshape(1, -1)
-        result = model.predict(character)
-        classifications.append(result)
+    img = cv2.resize(img, (600,400) )
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    # Applico il filtro bilaterale per rimuovere il rumore ed i dettagli dell'immagine
+    gray = cv2.bilateralFilter(gray, 13, 15, 15) 
 
-    # Aggiungo alla stringa della targa i caratteri che hanno ricevuto i punteggi maggiori nella classificazione
-    for prediction in classifications:
-        plate += prediction[0]
+    # Calcolo gli edge ed i contorni
+    edged = cv2.Canny(gray, 30, 200) 
+    contours = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours = imutils.grab_contours(contours)
+    contours = sorted(contours, key = cv2.contourArea, reverse = True)[:10]
 
-    print('Predicted license plate (characters may be out of order):')
-    print(plate)
+    possible_plates = []
+    plate = []
+    # Salvo solo i rettangoli
+    for c in contours:
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.015 * peri, True)
+        
+        if len(approx) == 4:
+            possible_plates.append(approx)
+            #cv2.drawContours(img, [approx], -1, (0, 0, 255), 3)
 
-    # Riordino i caratteri trovati
-    tmp = Segmentation.x_coordinates[:]
-    Segmentation.x_coordinates.sort()
-    for coordinate in x_chars:
-        ordered_plate += plate[tmp.index(coordinate)]
+    if len(possible_plates) != 0:
+        bottom = 400
+        
+        # Prendo in considerazione solo il rettangolo più in basso nell'immagine
+        for i, plate in enumerate(possible_plates):
+            if (min(possible_plates[i][:,:,1] < bottom)):
+                bottom = min(possible_plates[i][:,:,1])
+                plate = possible_plates[i]
+        
+        # Disegno i contorni sull'immagine
+        cv2.drawContours(img, [plate], -1, (0, 0, 255), 3)
+        mask = np.zeros(gray.shape,np.uint8)
+        new_image = cv2.drawContours(mask,[plate],0,255,-1,)
+        new_image = cv2.bitwise_and(img,img,mask=mask)
 
-    print('Ordered license plate')
-    print(ordered_plate)
+        # Estraggo solo l'immagine della targa
+        (x, y) = np.where(mask == 255)
+        (topx, topy) = (np.min(x), np.min(y))
+        (bottomx, bottomy) = (np.max(x), np.max(y))
+        Cropped = gray[topx:bottomx+1, topy:bottomy+1]
+
+        # Riconoscimento del testo tramite tesseract
+        text = pytesseract.image_to_string(Cropped, lang=lang, config='--psm 7')      
+
+        cv2.imshow('Cropped',Cropped)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        return checkText(text)
+    else:
+        return None
+
+
+def checkText(text):
+
+    text = text.split('\n')[0]
+    if len(text) == 8:
+        return text
+    else:
+        return None

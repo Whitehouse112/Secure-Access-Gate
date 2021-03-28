@@ -54,7 +54,7 @@ void callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
     int paramInt = stringRead.toInt() - 48;
     Serial.printf("\nparamInt: %d", paramInt);
     //setCameraParam(paramInt);
-    if (paramInt == 0 and busy == 0){
+    if (paramInt == 0 and busy == 0 and digitalRead(sensorPin) == 0){
       delay(2000);
       capture();
     }
