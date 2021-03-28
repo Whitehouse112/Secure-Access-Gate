@@ -72,6 +72,8 @@ def prediction(img):
 
 def checkText(text):
 
+    tmp = ""
+    
     text = text.split('\n')[0]
     for character in text:
         if character.isalnum():
