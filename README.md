@@ -13,8 +13,11 @@ IoT project for a secure access gate system
 In order to let the project works, users must:
 
 + ARDUINO
+    - setup Arduino IDE for esp32 (https://mega.nz/folder/QFRXRKLA#6BQIcx_SrRIX9Igr5w6XsA/file/NdxTlY7R - page 1 to 4)
+    - from Arduino IDE install ESP32Servo library
     - upload the Arduino.ino file to esp32-cam
     - connect E18-D80NK sensor to esp32-cam (blue=gnd, brown=5V, black=GPIO13)
+    - connect Servo Motor SG90 to esp32-cam (brown=gnd, red=5V, orange=GPIO15)
     - start esp32-cam and pair to pc with bluetooth (outgoing COM port must be annoteted)
 + BRIDGE
     - install tesseract (https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-v5.0.0-alpha.20201127.exe)

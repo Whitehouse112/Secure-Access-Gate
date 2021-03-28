@@ -66,6 +66,8 @@ def serialWrite(ser, code):
         inbuffer.clear()
         ser.write(code.encode())
 
-    # Inserire altri codici per inviare istruzioni ad arduino
+    if code == '1':
+        print(f"Opening gate...\n")
+        ser.write(code.encode())
     
     return None

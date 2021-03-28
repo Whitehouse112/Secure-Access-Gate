@@ -13,6 +13,7 @@ def main():
                 Bridge.serialWrite(ser, '0')
             else:
                 print(f"plate found: {plate}")
+                Bridge.serialWrite(ser, '1')
 
 if __name__ == '__main__':
     main()
