@@ -7,7 +7,7 @@ def main():
     while (True):
         img = Bridge.loop(ser)
         if img is not None:
-            plate = Prediction.detection(img)
+            plate = Prediction.prediction(img)
             if plate is None:
                 print("No plate found")
                 Bridge.serialWrite(ser, '0')

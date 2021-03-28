@@ -67,8 +67,8 @@ def useData(ser):
 def serialWrite(ser, code):
     global inbuffer
     
-    if code == 0:
-        print(f"Something went wrong...sending another request")
+    if code == '0':
+        print(f"Something went wrong...sending another request\n")
         inbuffer.clear
         ser.write(code.encode())
     
