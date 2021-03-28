@@ -73,7 +73,10 @@ def prediction(img):
 def checkText(text):
 
     text = text.split('\n')[0]
-    if len(text) == 8:
-        return text
+    for character in text:
+        if character.isalnum():
+            plate += character
+    if len(plate) == 7:
+        return plate
     else:
         return None
