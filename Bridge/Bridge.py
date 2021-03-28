@@ -65,5 +65,7 @@ def serialWrite(ser, code):
         print(f"Something went wrong...sending another request\n")
         inbuffer.clear()
         ser.write(code.encode())
+
+    # Inserire altri codici per inviare istruzioni ad arduino
     
     return None
