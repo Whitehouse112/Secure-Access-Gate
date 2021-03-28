@@ -70,4 +70,8 @@ def serialWrite(ser, code):
         print(f"Opening gate...\n")
         ser.write(code.encode())
     
+    if code == '2':
+        print(f"Closing gate...\n")
+        ser.write(code.encode())
+    
     return None

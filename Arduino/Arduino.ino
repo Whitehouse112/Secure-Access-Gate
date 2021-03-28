@@ -14,10 +14,12 @@ BluetoothSerial SerialBT;
 const int outPin=33;
 const int sensorPin = 13;
 const int flashPin = 4;
+const int servoPin = 15;
+const int lcdGPin = 2;
+const int lcdEPin = 12;
 
 // servo motor
 Servo servo1;
-const int servoPin = 15;
 
 // input symbol
 // 0:released, 1:pressed
@@ -37,12 +39,17 @@ void setup() {
     
   pinMode(outPin, OUTPUT);
   pinMode(flashPin, OUTPUT);
+  pinMode(lcdGPin, OUTPUT);
+  pinMode(lcdEPin, OUTPUT);
   pinMode(sensorPin, INPUT);
 
   servo1.setPeriodHertz(50);
   servo1.attach(servoPin, 500, 2400);
+  
   // set initial servo motor position
   servo1.write(0);
+  digitalWrite(lcdEPin, HIGH);
+  digitalWrite(lcdGPin, LOW);
   
   // initial state
   iState = 0;
@@ -64,13 +71,17 @@ void callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
     int paramInt = stringRead.toInt() - 48;
   
     if (paramInt == 0 and busy == 0 and digitalRead(sensorPin) == 0){
-      Serial.printf("\n%param %d: sending another image", paramInt);
+      Serial.printf("\n%d: sending another image", paramInt);
       delay(2000);
       capture();
     }
     if (paramInt == 1){
-      Serial.printf("\n%param %d: opening gate", paramInt);
-      openGate();
+      Serial.printf("\n%d: opening gate", paramInt);
+      controlGate(paramInt);
+    }
+    if (paramInt == 2){
+      Serial.printf("\n%d: closing gate", paramInt);
+      controlGate(paramInt);
     }
   }
 }
@@ -176,10 +187,25 @@ void writeSerialBT(camera_fb_t *fb){
   Serial.print("\nSent\n");
 }
 
-void openGate(){
-  for (int i = 0; i < 90; i++){
-    servo1.write(i);
-    delay(20);
+void controlGate(int action){
+  // open gate
+  if (action == 1){
+    digitalWrite(lcdEPin, LOW);
+    for (int i = 0; i < 90; i++){
+      servo1.write(i);
+      delay(20);
+    }
+    digitalWrite(lcdGPin, HIGH);
+  }
+
+  // close gate
+  if (action == 2){
+    digitalWrite(lcdGPin, LOW);
+    for (int i = 90; i > 0; i--){
+      servo1.write(i);
+      delay(20);
+    }
+    digitalWrite(lcdEPin, HIGH);
   }
 }
 
