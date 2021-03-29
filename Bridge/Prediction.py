@@ -72,7 +72,7 @@ def prediction(img):
 
 def checkText(text):
 
-    tmp = ""
+    plate = ""
     
     text = text.split('\n')[0]
     for character in text:
