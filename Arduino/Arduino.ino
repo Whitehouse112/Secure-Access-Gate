@@ -1,7 +1,6 @@
 #include "esp_camera.h"
 #define CAMERA_MODEL_AI_THINKER
 #include "BluetoothSerial.h"
-#include "ESP32Servo.h"
 #include "camera_pins.h"
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
@@ -14,12 +13,8 @@ BluetoothSerial SerialBT;
 const int outPin=33;
 const int sensorPin = 13;
 const int flashPin = 4;
-const int servoPin = 15;
 const int lcdGPin = 2;
 const int lcdEPin = 12;
-
-// servo motor
-Servo servo1;
 
 // input symbol
 // 0:released, 1:pressed
@@ -43,11 +38,7 @@ void setup() {
   pinMode(lcdEPin, OUTPUT);
   pinMode(sensorPin, INPUT);
 
-  servo1.setPeriodHertz(50);
-  servo1.attach(servoPin, 500, 2400);
-  
-  // set initial servo motor position
-  servo1.write(0);
+  // close gate
   digitalWrite(lcdEPin, HIGH);
   digitalWrite(lcdGPin, LOW);
   
@@ -191,20 +182,20 @@ void controlGate(int action){
   // open gate
   if (action == 1){
     digitalWrite(lcdEPin, LOW);
-    for (int i = 0; i < 90; i++){
-      servo1.write(i);
-      delay(20);
-    }
+    //for (int i = 0; i < 90; i++){
+      //servo1.write(i);
+      //delay(20);
+    //}
     digitalWrite(lcdGPin, HIGH);
   }
 
   // close gate
   if (action == 2){
     digitalWrite(lcdGPin, LOW);
-    for (int i = 90; i > 0; i--){
-      servo1.write(i);
-      delay(20);
-    }
+    //for (int i = 90; i > 0; i--){
+      //servo1.write(i);
+      //delay(20);
+    //}
     digitalWrite(lcdEPin, HIGH);
   }
 }
