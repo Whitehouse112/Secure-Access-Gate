@@ -69,8 +69,7 @@ class GateAPI(Resource):
             return "No Gate found", 404
 
 class ActivityAPI(Resource):
-    @token_required
-    def post(current_user, self):
+    def post(self):
         content = request.get_json()
         if not activity.checkActivity(content):
             return "Invalid input data", 400
