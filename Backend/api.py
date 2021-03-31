@@ -159,9 +159,6 @@ class UpdateLocation(Resource):
 
         #TODO: insert location checks, return 400 if not OK
 
-        if not userManager.checkLocation(content):
-            return "Location already exists", 409
-
         if userManager.updateLocation(content):
             return "Success", 200
         else:

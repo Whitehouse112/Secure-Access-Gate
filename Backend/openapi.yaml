@@ -262,8 +262,6 @@ paths:
           description: "Token is missing or invalid"
         404:
           description: "User not found"
-        409:
-          description: "Location alredy exists"
         500:
           description: "Internal server error"
           

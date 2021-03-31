@@ -20,10 +20,12 @@ class ActivityManager(object):
         return False
 
 class Activity:
-    def __init__(self, access, date):
-        self.access = access
+    def __init__(self, gateId, licensePlate, color, date):
+        self.gateId = gateId
+        self.licensePlate = licensePlate
+        self.color = color
         self.date = date
 
     def __repr__(self):
         #TODO: complete when you have the definitive form for the access object
-        return f'<Access: {self.access}>'
+        return f'<Gate ID: {self.gateId}>'
