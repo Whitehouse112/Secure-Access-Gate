@@ -114,6 +114,14 @@ class CreateUser(Resource):
     def post(self):
         content = request.get_json()
 
+        ret = userManager.checkUser(content['email'])
+        
+        if ret == 500:
+            return 'Server error', 500
+
+        if ret is not None:
+            return 'User already exists', 409
+
         hashed_password = generate_password_hash(content['password'], method='sha256')
         #TODO: create the User, and create the new database instance
         #TODO: correct the openAPI, should it return a json object? containing what?
@@ -159,6 +167,9 @@ class UpdateLocation(Resource):
 
         #TODO: insert location checks, return 400 if not OK
 
+        if not userManager.checkLocation(content):
+            return "Location already exists", 409
+
         if userManager.updateLocation(content):
             return "Success", 200
         else:
@@ -186,10 +197,11 @@ class RefreshJWT(Resource):
 #TODO: Correct all the paths or the openapi
 api.add_resource(GateAPI, f'{basePath}/gate')
 api.add_resource(ActivityAPI, f'{basePath}/activity')
-api.add_resource(LoginUser, f'{basePath}/login')
-api.add_resource(LogoutUser, f'{basePath}/logout')
-api.add_resource(UpdateLocation, f'{basePath}/location')
+api.add_resource(CreateUser, f'{basePath}/user/signin')
+api.add_resource(LoginUser, f'{basePath}/user/login')
+api.add_resource(LogoutUser, f'{basePath}/user/logout')
+api.add_resource(UpdateLocation, f'{basePath}/user/location')
 api.add_resource(RefreshJWT, f'{basePath}/jwt')
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='127.0.0.1', debug=True)

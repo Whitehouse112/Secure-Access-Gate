@@ -1,3 +1,6 @@
 flask
 flask-restful
 PyJWT
+SQLAlchemy
+sqlalchemy-pytds
+gunicorn

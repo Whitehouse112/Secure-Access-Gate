@@ -4,7 +4,7 @@ info:
   version: "1.0.0"
   title: "Secure Access Gate API"
 
-host: "iotproject.appspot.com"
+host: "quiet-groove-306310.appspot.com"
 basePath: "/api/v1"
 tags:
 - name: "gate"
@@ -154,7 +154,7 @@ paths:
         500:
           description: "Internal server error"
           
-  /user:
+  /user/signin:
     post:
       tags:
       - "user"
@@ -262,6 +262,8 @@ paths:
           description: "Token is missing or invalid"
         404:
           description: "User not found"
+        409:
+          description: "Location alredy exists"
         500:
           description: "Internal server error"
           
@@ -440,24 +442,9 @@ definitions:
   User:
     type: "object"
     properties:
-      id:
-        type: "integer"
-        format: "int64"
-      username:
-        type: "string"
-      firstName:
-        type: "string"
-      lastName:
-        type: "string"
       email:
         type: "string"
       password:
         type: "string"
-      phone:
-        type: "string"
-      userStatus:
-        type: "integer"
-        format: "int32"
-        description: "User Status"
     xml:
       name: "User"
