@@ -110,52 +110,59 @@ class ActivityAPI(Resource):
         else:
             return "No Gate found", 404
 
-class CreateUser(Resource):
+class SigninUser(Resource):
     def post(self):
         content = request.get_json()
 
-        ret = userManager.checkUser(content['email'])
-        
-        if ret == 500:
+        user = userManager.checkUser(content['email'])
+        if user == 500:
             return 'Server error', 500
-
-        if ret is not None:
+        if user is not None:
             return 'User already exists', 409
 
-        hashed_password = generate_password_hash(content['password'], method='sha256')
-        #TODO: create the User, and create the new database instance
-        #TODO: correct the openAPI, should it return a json object? containing what?
-        return 'Success', 200
+        hashed_password = generate_password_hash(content['password'], method='sha256') 
+        ret = userManager.addUser(content['email'], hashed_password)
+        if ret == 500:
+            return 'Server error', 500
+        else:
+            return 'Success', 200
 
 class LoginUser(Resource):
     def get(self):
+        
         auth = request.authorization
-
         if not auth or not auth.username or not auth.password:
             return "Invalid input data", 400
         
-        user = userManager.getUser(auth.username)
-
-        if not user:
+        user = userManager.checkUser(auth.username)
+        if user is None:
             return "Invalid username/password supplied", 401
 
-        if check_password_hash(user.password, auth.password):
-            jwt_refresh = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(days=30)}, app.config['SECRET_KEY'])   
-            jwt_expiry = jwt.encode({'user':auth.username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
-            return jsonify({'jwt_token':jwt_refresh, 'jwt_token_expiry':jwt_expiry})
+        if check_password_hash(user['pwd'], auth.password):
+            jwt_refresh = jwt.encode({'user':user['ID'], 'exp':datetime.datetime.utcnow() + datetime.timedelta(days=30)}, app.config['SECRET_KEY'])   
+            jwt_expiry = jwt.encode({'user':user['ID'], 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
 
+            ret = userManager.loginUser(auth.username, jwt_refresh)
+            if ret == 500:
+                return 'Server error', 500
+            return jsonify({'jwt_token':jwt_refresh, 'jwt_token_expiry':jwt_expiry})
+        
         return "Invalid username/password supplied", 401
 
 class LogoutUser(Resource):
     @token_required
     def get(current_user, self):
-        if not user.checkUser(current_user):
+        
+        user = userManager.getUser(current_user)
+        if user is None:
             return "User not found", 404
 
-        if user.logoutUser(current_user):
-            return ret, 200
-        else:
+        ret = userManager.logoutUser(current_user)
+        if ret == 500:
             return "Internal server error", 500
+        else:
+            return 'Success', 200
+            
 
 class UpdateLocation(Resource):
     @token_required
@@ -177,8 +184,8 @@ class UpdateLocation(Resource):
 
 class RefreshJWT(Resource):
     def post(self):
+        
         token = request.form['jwt_refresh']
-
         if not token:
             return "Invalid input data", 400
 
@@ -197,7 +204,7 @@ class RefreshJWT(Resource):
 #TODO: Correct all the paths or the openapi
 api.add_resource(GateAPI, f'{basePath}/gate')
 api.add_resource(ActivityAPI, f'{basePath}/activity')
-api.add_resource(CreateUser, f'{basePath}/user/signin')
+api.add_resource(SigninUser, f'{basePath}/user/signin')
 api.add_resource(LoginUser, f'{basePath}/user/login')
 api.add_resource(LogoutUser, f'{basePath}/user/logout')
 api.add_resource(UpdateLocation, f'{basePath}/user/location')
