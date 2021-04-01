@@ -123,7 +123,7 @@ class SigninUser(Resource):
         hashed_password = generate_password_hash(content['password'], method='sha256') 
         ret = userManager.addUser(content['email'], hashed_password)
         if ret == 500:
-            return 'Server error', 500
+            return 'Internal server error', 500
         else:
             return 'Success', 200
 
@@ -144,7 +144,7 @@ class LoginUser(Resource):
 
             ret = userManager.loginUser(auth.username, jwt_refresh)
             if ret == 500:
-                return 'Server error', 500
+                return 'Internal server error', 500
             return jsonify({'jwt_token':jwt_refresh, 'jwt_token_expiry':jwt_expiry})
         
         return "Invalid username/password supplied", 401
