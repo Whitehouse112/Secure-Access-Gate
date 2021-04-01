@@ -3,12 +3,13 @@ IoT project for a secure access gate system
 
 ## Requirements
 - imutils
+- keras
 - numpy==1.18.4
 - opencv-python==4.2.0.34
 - Pillow
 - pyserial
 - pytesseract
-- keras
+- tensorflow
 
 # Installation
 In order to let the project work, users must:

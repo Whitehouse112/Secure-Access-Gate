@@ -5,7 +5,7 @@ import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-def color_recognition(img, model):
+def color_recognition(img):
    
     model = load_model(f"{dir_path}\\files\\vehicle_color_haze_free_model.h5")
 
