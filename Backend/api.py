@@ -101,7 +101,7 @@ class ActivityAPI(Resource):
 
     @token_required
     def get(current_user, self):
-        if not user.checkUser(current_user):
+        if not userManager.checkUser(current_user):
             return "Invalid input data", 400
 
         ret = activity.getActivity(current_user)
