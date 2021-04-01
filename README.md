@@ -8,6 +8,7 @@ IoT project for a secure access gate system
 - Pillow
 - pyserial
 - pytesseract
+- keras
 
 # Installation
 In order to let the project work, users must:

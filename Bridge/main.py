@@ -1,5 +1,6 @@
 import Bridge
 import Prediction
+import ColorRecognition
 
 def main():
 
@@ -8,6 +9,7 @@ def main():
         img = Bridge.loop(ser)
         if img is not None:
             plate = Prediction.prediction(img)
+            color = ColorRecognition.color_recognition()
             if plate is None:
                 print("No plate found")
                 Bridge.serialWrite(ser, '0')
