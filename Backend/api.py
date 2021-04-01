@@ -192,8 +192,11 @@ class RefreshJWT(Resource):
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
             current_user = data['user']
-            #TODO: check on database if user has the same refresh token
-            if not userManager.checkUser(current_user):
+
+            user = userManager.getUser(current_user)
+            if user is None:
+                return "User not found", 404
+            if (user['jtw_refresh'] != token):
                 return "Token is invalid", 401
         except:
             return "Token is invalid", 401
