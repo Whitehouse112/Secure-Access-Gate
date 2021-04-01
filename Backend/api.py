@@ -170,7 +170,7 @@ class UpdateLocation(Resource):
         if not userManager.checkUser(current_user):
             return "User not found", 404
 
-        content = request.form
+        content = request.get_json()
 
         #TODO: insert location checks, return 400 if not OK
 
@@ -185,7 +185,7 @@ class UpdateLocation(Resource):
 class RefreshJWT(Resource):
     def post(self):
         
-        token = request.form['jwt_refresh']
+        token = request.get_json()['jwt_refresh']
         if not token:
             return "Invalid input data", 400
 
