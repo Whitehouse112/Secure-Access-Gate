@@ -72,7 +72,7 @@ class UserManager:
     def addCar(self, id_user, license_plate, color, brand):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("INSERT INTO Cars VALUES (Plate=:license_plate, Color=:color, Brand=:brand, ID_User =:id_user)")
+                stmt = sqlalchemy.text("INSERT INTO Cars VALUES (:license_plate, :color, :brand, :id_user)")
                 return conn.execute(stmt, license_plate=license_plate, color=color, brand=brand, id_user=id_user)
         except Exception as e:
             return 500
