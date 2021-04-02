@@ -18,6 +18,7 @@ userManager = UserManager()
 activity = ActivityManager()
 
 STATUS = ['granted', 'denied', 'ignored', 'pending', 'reported']
+COLOR = ['Black', 'Blue', 'Green', 'Gray', 'Red', 'White', 'Yellow', 'Cyan']
 
 def token_required(f):
     @wraps(f)
@@ -109,6 +110,32 @@ class ActivityAPI(Resource):
             return ret, 200
         else:
             return "No Gate found", 404
+
+class CarAPI(Resource):
+    @token_required
+    def post(current_user, self):
+        license_plate = request.get_json()['license']
+        color = request.get_json()['color']
+        brand = request.get_json()['brand']
+
+        if license_plate is None or len(license_plate) != 7:
+            return "Invalid input data", 400
+
+        if color not in COLOR:
+            return "Invalid input data", 400
+
+        #Eventually check brand
+        car = userManager.checkCar(current_user, license_plate)
+        if car == 500:
+            return 'Server error', 500
+        if car is not None:
+            return "Car already exists", 409
+
+        ret = userManager.addCar(current_user, license_plate, color, brand)
+        if ret == 500:
+            return 'Internal server error', 500
+        else:
+            return 'Success', 200
 
 class SigninUser(Resource):
     def post(self):
@@ -207,6 +234,7 @@ class RefreshJWT(Resource):
 #TODO: Correct all the paths or the openapi
 api.add_resource(GateAPI, f'{basePath}/gate')
 api.add_resource(ActivityAPI, f'{basePath}/activity')
+api.add_resource(CarAPI, f'{basePath}/car')
 api.add_resource(SigninUser, f'{basePath}/user/signin')
 api.add_resource(LoginUser, f'{basePath}/user/login')
 api.add_resource(LogoutUser, f'{basePath}/user/logout')
