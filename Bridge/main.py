@@ -2,6 +2,7 @@ import Bridge
 import Prediction
 import ColorRecognition
 
+uuid = "d8c0e668-b59e-455e-af78-77470ba291c5"
 att = 5
 
 def main():
