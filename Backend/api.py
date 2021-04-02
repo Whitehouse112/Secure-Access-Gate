@@ -138,7 +138,7 @@ class LoginUser(Resource):
         if user is None:
             return "Invalid username/password supplied", 401
 
-        if check_password_hash(user['pwd'], auth.password):
+        if check_password_hash(user['Pwd'], auth.password):
             jwt_refresh = jwt.encode({'user':user['ID'], 'exp':datetime.datetime.utcnow() + datetime.timedelta(days=30)}, app.config['SECRET_KEY'])   
             jwt_expiry = jwt.encode({'user':user['ID'], 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
 
@@ -196,7 +196,7 @@ class RefreshJWT(Resource):
             user = userManager.getUser(current_user)
             if user is None:
                 return "User not found", 404
-            if (user['jtw_refresh'] != token):
+            if (user['Jtw_refresh'] != token):
                 return "Token is invalid", 401
         except:
             return "Token is invalid", 401

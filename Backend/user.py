@@ -15,7 +15,7 @@ class UserManager:
     def checkUser(self, email):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("SELECT * FROM Users WHERE email=:email")
+                stmt = sqlalchemy.text("SELECT * FROM Users WHERE Email=:email")
                 return conn.execute(stmt, email=email).fetchone()
         except Exception as e:
             return 500
@@ -31,7 +31,7 @@ class UserManager:
     def addUser(self, email, password):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("INSERT INTO Users (email, pwd) VALUES (:email, :pwd)")
+                stmt = sqlalchemy.text("INSERT INTO Users (Email, Pwd) VALUES (:email, :pwd)")
                 return conn.execute(stmt, email=email, pwd=password)
         except Exception as e:
             return 500
@@ -39,7 +39,7 @@ class UserManager:
     def loginUser(self, email, jwt_refresh):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("UPDATE Users SET jwt_refresh=:jwt_refresh where email=:email")
+                stmt = sqlalchemy.text("UPDATE Users SET Jwt_refresh=:jwt_refresh where Email=:email")
                 return conn.execute(stmt, jwt_refresh=jwt_refresh, email=email)
         except Exception as e:
             return 500
@@ -47,7 +47,7 @@ class UserManager:
     def logoutUser(self, id):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("UPDATE Users SET jwt_refresh=NULL where ID=:id")
+                stmt = sqlalchemy.text("UPDATE Users SET Jwt_refresh=NULL where ID=:id")
                 return conn.execute(stmt, id=id)
         except Exception as e:
             return 500
