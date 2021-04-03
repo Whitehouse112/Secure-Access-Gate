@@ -2,9 +2,10 @@ from flask import Flask, request, jsonify
 from flask_restful import Resource, Api
 import jwt
 import datetime
-from gate import GateManager
-from user import UserManager, User
-from activity import ActivityManager
+import GateManager
+import CarManager
+import UserManager
+import ActivityManager
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -23,8 +24,8 @@ COLOR = ['Black', 'Blue', 'Green', 'Gray', 'Red', 'White', 'Yellow', 'Cyan']
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        
         token = None
-
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
 
@@ -43,104 +44,146 @@ def token_required(f):
 
     return decorated
 
-class GateAPI(Resource):
-    @token_required
-    def post(current_user, self):
-        content = request.get_json()
-        if not gate.checkGate(content):
-            return "Invalid input data", 400
+# class ActivityAPI(Resource):
+    # def post(self):
+        
+    #     content = request.get_json()
+    #     if not activity.checkActivity(content):
+    #         return "Invalid input data", 400
 
-        if gate.exists(content):
-            return "Gate already exists", 409
+    #     if activity.exists(content):
+    #         return "Activity already exists", 409
 
-        if gate.addGate(content):
-            return f"Success + {current_user}", 200
-        else:
-            return "Internal server error", 500
+    #     if activity.addActivity(content):
+    #         return "Success", 200
+    #     else:
+    #         return "Internal server error", 500
 
-    @token_required
-    def get(current_user, self):
-        if not userManager.checkUser(current_user):
-            return "Invalid input data", 400
+    # @token_required
+    # def put(self, current_user):
+        
+    #     activityId = request.get_json()['activityId']
+    #     userId = request.get_json()['userId']
+    #     status = request.get_json()['status']
 
-        ret = gate.getGate(current_user)
-        if ret != []:
-            return ret, 200
-        else:
-            return "No Gate found", 404
+    #     if activity.checkActivity(userId, activityId):
+    #         return "No Activity found", 404
 
-class ActivityAPI(Resource):
-    def post(self):
-        content = request.get_json()
-        if not activity.checkActivity(content):
-            return "Invalid input data", 400
+    #     if status not in STATUS:
+    #         return "Invalid input data", 400
 
-        if activity.exists(content):
-            return "Activity already exists", 409
+    #     if activity.updateActivity(userId, activityId, status):
+    #         return "Internal server error", 500
+    #     else:
+    #         return "Success", 200
 
-        if activity.addActivity(content):
-            return "Success", 200
-        else:
-            return "Internal server error", 500
+    # @token_required
+    # def get(current_user, self):
+        
+    #     if not userManager.checkUser(current_user):
+    #         return "Invalid input data", 400
 
-    @token_required
-    def put(current_user, self):
-        activityId = request.get_json()['activityId']
-        userId = request.get_json()['userId']
-        status = request.get_json()['status']
-
-        if activity.checkActivity(userId, activityId):
-            return "No Activity found", 404
-
-        if status not in STATUS:
-            return "Invalid input data", 400
-
-        if activity.updateActivity(userId, activityId, status):
-            return "Internal server error", 500
-        else:
-            return "Success", 200
-
-    @token_required
-    def get(current_user, self):
-        if not userManager.checkUser(current_user):
-            return "Invalid input data", 400
-
-        ret = activity.getActivity(current_user)
-        if ret != []:
-            return ret, 200
-        else:
-            return "No Gate found", 404
+    #     ret = activity.getActivity(current_user)
+    #     if ret != []:
+    #         return ret, 200
+    #     else:
+    #         return "No Gate found", 404
 
 class CarAPI(Resource):
     @token_required
-    def post(current_user, self):
+    def post(self, current_user):
+        
         license_plate = request.get_json()['license']
         color = request.get_json()['color']
         brand = request.get_json()['brand']
 
         if license_plate is None or len(license_plate) != 7:
             return "Invalid input data", 400
-
         if color not in COLOR:
             return "Invalid input data", 400
 
         #Eventually check brand
-        car = userManager.checkCar(current_user, license_plate)
+        car = CarManager.checkCar(current_user, license_plate)
         if car == 500:
             return 'Server error', 500
         if car is not None:
             return "Car already exists", 409
 
-        ret = userManager.addCar(current_user, license_plate, color, brand)
+        ret = CarManager.addCar(current_user, license_plate, color, brand)
         if ret == 500:
             return 'Internal server error', 500
         else:
             return 'Success', 200
 
+class GateAPI(Resource):
+    @token_required
+    def post(self, current_user):
+        
+        id_gate = request.get_json(['id_gate'])
+        name = request.get_json(['name'])
+        location = request.get_json(['location'])
+        photo = request.get_json(['photo'])
+
+        if id_gate is None:
+            return "Invalid input data", 400
+        if id_gate not in GateManager.checkSensors():
+            return "Invalid input data", 400
+        if name is None:
+            return "Invalid input data", 400
+        if location is None:
+            return "Invalid input data", 400
+
+        gate = GateManager.checkGate(current_user, id_gate)
+        if gate == 500:
+            return 'Server error', 500
+        if gate is not None:
+            return 'Gate already exists', 409
+
+        ret = GateManager.addGate(current_user, id_gate, name, location, photo)
+        if ret == 500:
+            return 'Internal server error', 500
+        else:
+            return 'Success', 200
+
+    @token_required
+    def get(self, current_user):
+
+        id_gate = request.get_json(['id_gate'])
+
+        gate = gate.getGate(current_user, id_gate)
+        if gate is None:
+            return "No Gate found", 404
+        if gate == 500:
+            return "Server error", 500
+        else:
+            return jsonify(gate)
+
+class RefreshJWT(Resource):
+    def post(self):
+        
+        token = request.get_json()['jwt_refresh']
+        if not token:
+            return "Invalid input data", 400
+
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = data['user']
+
+            user = userManager.getUser(current_user)
+            if user is None:
+                return "User not found", 404
+            if (user['Jtw_refresh'] != token):
+                return "Token is invalid", 401
+        except:
+            return "Token is invalid", 401
+        
+        jwt_expiry = jwt.encode({'user':current_user, 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
+        return jsonify({'jwt_token_expiry':jwt_expiry})
+
 class SigninUser(Resource):
     def post(self):
+        
         content = request.get_json()
-
         user = userManager.checkUser(content['email'])
         if user == 500:
             return 'Server error', 500
@@ -173,16 +216,18 @@ class LoginUser(Resource):
             if ret == 500:
                 return 'Internal server error', 500
             return jsonify({'jwt_token':jwt_refresh, 'jwt_token_expiry':jwt_expiry})
-        
-        return "Invalid username/password supplied", 401
+        else:
+            return "Invalid username/password supplied", 401
 
 class LogoutUser(Resource):
     @token_required
-    def get(current_user, self):
+    def get(self, current_user):
         
         user = userManager.getUser(current_user)
         if user is None:
             return "User not found", 404
+        if user is None:
+            return "Server error", 500
 
         ret = userManager.logoutUser(current_user)
         if ret == 500:
@@ -190,56 +235,34 @@ class LogoutUser(Resource):
         else:
             return 'Success', 200
             
-
-class UpdateLocation(Resource):
-    @token_required
-    def post(current_user, self):
-        if not userManager.checkUser(current_user):
-            return "User not found", 404
-
-        content = request.get_json()
-
-        #TODO: insert location checks, return 400 if not OK
-
-        if not userManager.checkLocation(content):
-            return "Location already exists", 409
-
-        if userManager.updateLocation(content):
-            return "Success", 200
-        else:
-            return "Internal server error", 500
-
-class RefreshJWT(Resource):
-    def post(self):
+# class UpdateLocation(Resource):
+#     @token_required
+#     def post(self, current_user):
         
-        token = request.get_json()['jwt_refresh']
-        if not token:
-            return "Invalid input data", 400
+#         if not userManager.checkUser(current_user):
+#             return "User not found", 404
 
-        try:
-            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            current_user = data['user']
+#         content = request.get_json()
 
-            user = userManager.getUser(current_user)
-            if user is None:
-                return "User not found", 404
-            if (user['Jtw_refresh'] != token):
-                return "Token is invalid", 401
-        except:
-            return "Token is invalid", 401
-        
-        jwt_expiry = jwt.encode({'user':current_user, 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
-        return jsonify({'jwt_token_expiry':jwt_expiry})
+#         #TODO: insert location checks, return 400 if not OK
+
+#         if not userManager.checkLocation(content):
+#             return "Location already exists", 409
+
+#         if userManager.updateLocation(content):
+#             return "Success", 200
+#         else:
+#             return "Internal server error", 500
 
 #TODO: Correct all the paths or the openapi
-api.add_resource(GateAPI, f'{basePath}/gate')
-api.add_resource(ActivityAPI, f'{basePath}/activity')
+#api.add_resource(ActivityAPI, f'{basePath}/activity')
 api.add_resource(CarAPI, f'{basePath}/car')
+api.add_resource(GateAPI, f'{basePath}/gate')
+api.add_resource(RefreshJWT, f'{basePath}/jwt')
 api.add_resource(SigninUser, f'{basePath}/user/signin')
 api.add_resource(LoginUser, f'{basePath}/user/login')
 api.add_resource(LogoutUser, f'{basePath}/user/logout')
-api.add_resource(UpdateLocation, f'{basePath}/user/location')
-api.add_resource(RefreshJWT, f'{basePath}/jwt')
+#api.add_resource(UpdateLocation, f'{basePath}/user/location')
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', debug=True)
