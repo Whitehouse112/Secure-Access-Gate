@@ -1,23 +1,29 @@
+import database
+import sqlalchemy
+from datetime import datetime
+
 class ActivityManager(object):
-    def getActivity(self, userId):
-        #TODO: get all activity from DB of userId
-        return []
 
-    def addActivity(self, activity):
-        #TODO: add activity to DB
-        return True
-    
-    def checkActivity(self, userId, activityId):
-        #TODO: check if activity has correct parameters
-        return True
-    
-    def updateActivity(self, userId, activityId, status):
-        #TODO: update activity
-        return True
+    def __init__(self):
+        self.db = database.create_connection()
 
-    def exists(self, activity):
-        #TODO: check if activity already exists
-        return False
+    def getActivities(self, id_user, id_gate,):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("SELECT * FROM Accesses WHERE ID_User=:id_user and ID_Gate=:id_gate")
+                return conn.execute(stmt, id_user=id_user, id_gate=id_gate).fetchall()
+        except Exception as e:
+            return 500
+
+    def addActivity(self, id_user, id_gate, id_car, outcome):
+        now = datetime.now()
+        date_time = now.strftime("%Y/%m/%g %H:%M:%S")
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("INSERT INTO Accesses (ID_User, ID_Gate, ID_Car, Date_Time, Outcome) VALUES (:id_user, :id_gate, :id_car, :date_time, :outcome)")
+                return conn.execute(stmt, id_user=id_user, id_gate=id_gate, id_car=id_car, date_time=date_time, outcome=outcome)
+        except Exception as e:
+            return 500
 
 class Activity:
     def __init__(self, gateId, licensePlate, color, date):

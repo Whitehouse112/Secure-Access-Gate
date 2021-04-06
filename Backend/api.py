@@ -44,20 +44,57 @@ def token_required(f):
 
     return decorated
 
-# class ActivityAPI(Resource):
-    # def post(self):
+class ActivityAPI(Resource):
+    def post(self):
+
+        id_gate = request.get_json(['id_gate'])
+        license_plate = request.get_json()['license']
+        color = request.get_json()['color']
         
-    #     content = request.get_json()
-    #     if not activity.checkActivity(content):
-    #         return "Invalid input data", 400
+        if id_gate not in GateManager.checkSensors():
+            return "Invalid input data", 400
+        if license_plate is None or len(license_plate) != 7:
+            return "Invalid input data", 400
+        if color not in COLOR:
+            return "Invalid input data", 400
 
-    #     if activity.exists(content):
-    #         return "Activity already exists", 409
+        user = UserManager.checkGate(id_gate)
+        if user == 500:
+            return 'Internal server error', 500
+        if user is None:
+            return 'User not found', 404
 
-    #     if activity.addActivity(content):
-    #         return "Success", 200
-    #     else:
-    #         return "Internal server error", 500
+        car = CarManager.checkCar(user, license_plate, color)
+        if car == 500:
+            return 'Internal server error', 500
+        if car is None:
+            return 'Car not found', 404
+
+        activities = ActivityManager.getActivities(user, id_gate)
+        if activities == 500:
+            return 'Internal server error', 500
+        
+        if len(activities) < 10:
+            anomaly = 1
+        else:
+            # anomaly detection con la lista di attività sulla base del datetime
+            # controllare le attività dell'utente tramite anomaly detection
+            # anomaly = anomalyDetecion(activities)
+            anomaly = 2
+
+        if anomaly > 1:
+            outcome = 'Pending'
+            ret_code = 202
+        else:
+            outcome = 'Granted'
+            ret_code = 200
+        
+        ret = ActivityManager.addActivity(user, id_gate, car['ID'], outcome)
+        if ret == 500:
+            return 'Internal server error', 500
+        else:
+            return outcome, ret_code
+        
 
     # @token_required
     # def put(self, current_user):
@@ -255,7 +292,7 @@ class LogoutUser(Resource):
 #             return "Internal server error", 500
 
 #TODO: Correct all the paths or the openapi
-#api.add_resource(ActivityAPI, f'{basePath}/activity')
+api.add_resource(ActivityAPI, f'{basePath}/activity')
 api.add_resource(CarAPI, f'{basePath}/car')
 api.add_resource(GateAPI, f'{basePath}/gate')
 api.add_resource(RefreshJWT, f'{basePath}/jwt')

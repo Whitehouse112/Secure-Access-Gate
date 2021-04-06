@@ -8,6 +8,14 @@ class UserManager:
     def __init__(self):
         self.db = database.create_connection()
 
+    def checkGate(self, id_gate):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("SELECT ID_User FROM Gates WHERE ID=:id_gate")
+                return conn.execute(stmt, id_gate=id_gate).fetchone()
+        except Exception as e:
+            return 500
+
     def checkUser(self, email):
         try:
             with self.db.connect() as conn:

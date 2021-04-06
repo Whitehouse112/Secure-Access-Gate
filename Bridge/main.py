@@ -3,11 +3,11 @@ import Prediction
 import ColorRecognition
 
 uuid = "d8c0e668-b59e-455e-af78-77470ba291c5"
-att = 5
+attempt = 5
 
 def main():
 
-    global att
+    global attempt
 
     ser = Bridge.setup()
     while (True):
@@ -16,16 +16,17 @@ def main():
             plate = Prediction.prediction(img)
             color = ColorRecognition.color_recognition(img)
             if plate is None:
-                if att > 0:
+                if attempt > 0:
                     print("No plate found")
                     Bridge.serialWrite(ser, '0')
                 else:
                     print("maximum number of attempts reached")
-                att -= 1
+                attempt -= 1
             else:
                 print(f"plate found: {plate}")
+                #controllare che non ci siano anomalie
                 Bridge.serialWrite(ser, '1')
-                att = 5
+                attempt = 5
 
 if __name__ == '__main__':
     main()

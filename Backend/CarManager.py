@@ -6,11 +6,15 @@ class CarManager:
     def __init__(self):
         self.db = database.create_connection()
 
-    def checkCar(self, id_user, license_plate):
+    def checkCar(self, id_user, license_plate, color):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("SELECT * FROM Cars WHERE Plate=:license_plate and ID_User =:id_user ")
-                return conn.execute(stmt, license_plate=license_plate, id_user=id_user).fetchone()
+                if color is None:
+                    stmt = sqlalchemy.text("SELECT * FROM Cars WHERE Plate=:license_plate and ID_User =:id_user")
+                    return conn.execute(stmt, license_plate=license_plate, id_user=id_user).fetchone()
+                else:
+                    stmt = sqlalchemy.text("SELECT * FROM Cars WHERE Plate=:license_plate and ID_User =:id_user and color=:color")
+                    return conn.execute(stmt, license_plate=license_plate, id_user=id_user, color=color).fetchone()
         except Exception as e:
             return 500
 
