@@ -52,7 +52,7 @@ class ActivityAPI(Resource):
         license_plate = request.get_json()['license']
         color = request.get_json()['color']
         
-        if id_gate not in gateManager.checkSensors():
+        if  gateManager.checkSensors(id_gate) is None:
             return "Invalid input data", 400
         if license_plate is None or len(license_plate) != 7:
             return "Invalid input data", 400

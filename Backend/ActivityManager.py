@@ -7,7 +7,7 @@ class ActivityManager(object):
     def __init__(self):
         self.db = database.create_connection()
 
-    def getActivities(self, id_user, id_gate,):
+    def getActivities(self, id_user, id_gate):
         try:
             with self.db.connect() as conn:
                 stmt = sqlalchemy.text("SELECT * FROM Accesses WHERE ID_User=:id_user and ID_Gate=:id_gate")
