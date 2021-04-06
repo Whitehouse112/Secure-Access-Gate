@@ -12,7 +12,8 @@ def prediction(img):
     # Apro il file di configurazione e leggo il parametro [PORTA]
     filename = f"{dir_path}\\files\\config.txt"
     file = open(filename, 'r')
-    lang= file.readline().split(',')[1]
+    lang = file.readline().split(',')[1]
+    lang = lang.split('\n')[0]
     file.close()
 
     img = cv2.resize(img, (600,400) )

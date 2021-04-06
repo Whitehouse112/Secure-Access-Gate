@@ -16,7 +16,8 @@ def main():
         img = Bridge.loop(ser)
         if img is not None:
             plate = Prediction.prediction(img)
-            color = ColorRecognition.color_recognition(img)
+            #color = ColorRecognition.color_recognition(img)
+            color = "White"
             if plate is None:
                 if attempt > 0:
                     print("No plate found")

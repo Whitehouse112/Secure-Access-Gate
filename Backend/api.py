@@ -48,7 +48,7 @@ def token_required(f):
 class ActivityAPI(Resource):
     def post(self):
 
-        id_gate = request.get_json(['id_gate'])
+        id_gate = request.get_json()['id_gate']
         license_plate = request.get_json()['license']
         color = request.get_json()['color']
         
@@ -59,7 +59,7 @@ class ActivityAPI(Resource):
         if color not in COLOR:
             return "Invalid input data", 400
 
-        user = userManager.checkGate(id_gate)
+        user = userManager.checkGate(id_gate)[0]
         if user == 500:
             return 'Internal server error', 500
         if user is None:
