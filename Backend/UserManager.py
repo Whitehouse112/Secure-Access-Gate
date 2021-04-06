@@ -2,7 +2,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import database
 import sqlalchemy
 
-
 class UserManager:
 
     def __init__(self):

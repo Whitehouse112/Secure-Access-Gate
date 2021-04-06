@@ -2,10 +2,10 @@ from flask import Flask, request, jsonify
 from flask_restful import Resource, Api
 import jwt
 import datetime
-import GateManager
-import CarManager
-import UserManager
-import ActivityManager
+from GateManager import GateManager
+from CarManager import CarManager
+from UserManager import UserManager
+from ActivityManager import ActivityManager
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -14,9 +14,10 @@ api = Api(app)
 app.config['SECRET_KEY'] = 'Secret'
 basePath = '/api/v1'
 
-gate = GateManager()
+gateManager = GateManager()
 userManager = UserManager()
-activity = ActivityManager()
+activityManager = ActivityManager()
+carManager = CarManager()
 
 STATUS = ['granted', 'denied', 'ignored', 'pending', 'reported']
 COLOR = ['Black', 'Blue', 'Green', 'Gray', 'Red', 'White', 'Yellow', 'Cyan']
@@ -51,26 +52,26 @@ class ActivityAPI(Resource):
         license_plate = request.get_json()['license']
         color = request.get_json()['color']
         
-        if id_gate not in GateManager.checkSensors():
+        if id_gate not in gateManager.checkSensors():
             return "Invalid input data", 400
         if license_plate is None or len(license_plate) != 7:
             return "Invalid input data", 400
         if color not in COLOR:
             return "Invalid input data", 400
 
-        user = UserManager.checkGate(id_gate)
+        user = userManager.checkGate(id_gate)
         if user == 500:
             return 'Internal server error', 500
         if user is None:
             return 'User not found', 404
 
-        car = CarManager.checkCar(user, license_plate, color)
-        if car == 500:
+        cars = carManager.checkCar(user, license_plate, color)
+        if cars == 500:
             return 'Internal server error', 500
-        if car is None:
+        if cars is None:
             return 'Car not found', 404
 
-        activities = ActivityManager.getActivities(user, id_gate)
+        activities = activityManager.getActivities(user, id_gate)
         if activities == 500:
             return 'Internal server error', 500
         
@@ -89,7 +90,7 @@ class ActivityAPI(Resource):
             outcome = 'Granted'
             ret_code = 200
         
-        ret = ActivityManager.addActivity(user, id_gate, car['ID'], outcome)
+        ret = activityManager.addActivity(user, id_gate, cars['ID'], outcome)
         if ret == 500:
             return 'Internal server error', 500
         else:
@@ -140,13 +141,13 @@ class CarAPI(Resource):
             return "Invalid input data", 400
 
         #Eventually check brand
-        car = CarManager.checkCar(current_user, license_plate)
+        car = carManager.checkCar(current_user, license_plate)
         if car == 500:
             return 'Server error', 500
         if car is not None:
             return "Car already exists", 409
 
-        ret = CarManager.addCar(current_user, license_plate, color, brand)
+        ret = carManager.addCar(current_user, license_plate, color, brand)
         if ret == 500:
             return 'Internal server error', 500
         else:
@@ -156,27 +157,29 @@ class GateAPI(Resource):
     @token_required
     def post(self, current_user):
         
-        id_gate = request.get_json(['id_gate'])
-        name = request.get_json(['name'])
-        location = request.get_json(['location'])
-        photo = request.get_json(['photo'])
+        id_gate = request.get_json()['id_gate']
+        name = request.get_json()['name']
+        location = request.get_json()['location']
+        # photo = request.get_json()['photo']
 
         if id_gate is None:
             return "Invalid input data", 400
-        if id_gate not in GateManager.checkSensors():
+        lst = gateManager.checkSensors()
+        lst[0].__str__
+        if id_gate not in lst:
             return "Invalid input data", 400
         if name is None:
             return "Invalid input data", 400
         if location is None:
             return "Invalid input data", 400
 
-        gate = GateManager.checkGate(current_user, id_gate)
+        gate = gateManager.checkGate(current_user, id_gate)
         if gate == 500:
             return 'Server error', 500
         if gate is not None:
             return 'Gate already exists', 409
 
-        ret = GateManager.addGate(current_user, id_gate, name, location, photo)
+        ret = gateManager.addGate(current_user, id_gate, name, location)
         if ret == 500:
             return 'Internal server error', 500
         else:
@@ -185,7 +188,7 @@ class GateAPI(Resource):
     @token_required
     def get(self, current_user):
 
-        id_gate = request.get_json(['id_gate'])
+        id_gate = request.get_json()['id_gate']
 
         gate = gate.getGate(current_user, id_gate)
         if gate is None:
@@ -261,10 +264,10 @@ class LogoutUser(Resource):
     def get(self, current_user):
         
         user = userManager.getUser(current_user)
-        if user is None:
-            return "User not found", 404
-        if user is None:
+        if user == 500:
             return "Server error", 500
+        if user is None:
+            return "User not found", 404 
 
         ret = userManager.logoutUser(current_user)
         if ret == 500:

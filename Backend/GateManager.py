@@ -34,11 +34,11 @@ class GateManager:
         except Exception as e:
             return 500
 
-    def addGate(self, id_user, id_gate, name, location, photo):
+    def addGate(self, id_user, id_gate, name, location):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("INSERT INTO Gates VALUES (:id_gate, :id_user, :name, :location, :photo)")
-                return conn.execute(stmt, id_gate=id_gate, id_user=id_user, name=name, location=location, photo=photo)
+                stmt = sqlalchemy.text("INSERT INTO Gates VALUES (:id_gate, :id_user, :name, :location)")
+                return conn.execute(stmt, id_gate=id_gate, id_user=id_user, name=name, location=location)
         except Exception as e:
             return 500
 
