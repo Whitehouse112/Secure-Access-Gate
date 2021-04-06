@@ -41,7 +41,7 @@ def token_required(f):
         except:
             return "Token is missing or invalid", 401
 
-        return f(current_user, *args, **kwargs)
+        return f(*args, current_user, **kwargs)
 
     return decorated
 
@@ -65,10 +65,10 @@ class ActivityAPI(Resource):
         if user is None:
             return 'User not found', 404
 
-        cars = carManager.checkCar(user, license_plate, color)
-        if cars == 500:
+        car = carManager.checkCar(user, license_plate, color)
+        if car == 500:
             return 'Internal server error', 500
-        if cars is None:
+        if car is None:
             return 'Car not found', 404
 
         activities = activityManager.getActivities(user, id_gate)
@@ -90,7 +90,7 @@ class ActivityAPI(Resource):
             outcome = 'Granted'
             ret_code = 200
         
-        ret = activityManager.addActivity(user, id_gate, cars['ID'], outcome)
+        ret = activityManager.addActivity(user, id_gate, car['ID'], outcome)
         if ret == 500:
             return 'Internal server error', 500
         else:
@@ -141,7 +141,7 @@ class CarAPI(Resource):
             return "Invalid input data", 400
 
         #Eventually check brand
-        car = carManager.checkCar(current_user, license_plate)
+        car = carManager.checkCar(current_user, license_plate, color)
         if car == 500:
             return 'Server error', 500
         if car is not None:
@@ -164,9 +164,7 @@ class GateAPI(Resource):
 
         if id_gate is None:
             return "Invalid input data", 400
-        lst = gateManager.checkSensors()
-        lst[0].__str__
-        if id_gate not in lst:
+        if gateManager.checkSensors(id_gate) is None:
             return "Invalid input data", 400
         if name is None:
             return "Invalid input data", 400
@@ -188,15 +186,13 @@ class GateAPI(Resource):
     @token_required
     def get(self, current_user):
 
-        id_gate = request.get_json()['id_gate']
-
-        gate = gate.getGate(current_user, id_gate)
-        if gate is None:
+        gates = gateManager.getGates(current_user)
+        if gates is None:
             return "No Gate found", 404
-        if gate == 500:
+        if gates == 500:
             return "Server error", 500
         else:
-            return jsonify(gate)
+            return jsonify(gates)
 
 class RefreshJWT(Resource):
     def post(self):
@@ -212,7 +208,7 @@ class RefreshJWT(Resource):
             user = userManager.getUser(current_user)
             if user is None:
                 return "User not found", 404
-            if (user['Jtw_refresh'] != token):
+            if (user['Jwt_refresh'] != token):
                 return "Token is invalid", 401
         except:
             return "Token is invalid", 401

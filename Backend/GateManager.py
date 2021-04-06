@@ -6,11 +6,11 @@ class GateManager:
     def __init__(self):
         self.db = database.create_connection()
 
-    def checkSensors(self):
+    def checkSensors(self, id_gate):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("SELECT * FROM Sensors")
-                return conn.execute(stmt).fetchall()
+                stmt = sqlalchemy.text("SELECT * FROM Sensors where ID=:id_gate")
+                return conn.execute(stmt, id_gate=id_gate).fetchone()
         except Exception as e:
             return 500
 
@@ -22,22 +22,18 @@ class GateManager:
         except Exception as e:
             return 500
 
-    def getGate(self, id_user, id_gate):
+    def getGates(self, id_user):
         try:
             with self.db.connect() as conn:
-                if id_gate is None:
-                    stmt = sqlalchemy.text("SELECT * FROM Gates WHERE ID_User=:id_user")
-                    return conn.execute(stmt, id_user=id_user).fetchall()
-                else:
-                    stmt = sqlalchemy.text("SELECT * FROM Gates WHERE ID=_id_gate and ID_User=:id_user")
-                    return conn.execute(stmt, id_gate=id_gate, id_user=id_user).fetchone()
+                stmt = sqlalchemy.text("SELECT * FROM Gates WHERE ID_User=:id_user")
+                return conn.execute(stmt, id_user=id_user).fetchall()
         except Exception as e:
             return 500
 
     def addGate(self, id_user, id_gate, name, location):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("INSERT INTO Gates VALUES (:id_gate, :id_user, :name, :location)")
+                stmt = sqlalchemy.text("INSERT INTO Gates (ID, ID_User, Name, Location) VALUES (:id_gate, :id_user, :name, :location)")
                 return conn.execute(stmt, id_gate=id_gate, id_user=id_user, name=name, location=location)
         except Exception as e:
             return 500
