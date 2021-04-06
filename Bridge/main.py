@@ -26,22 +26,13 @@ def main():
                 attempt -= 1
             else:
                 print(f"plate found: {plate}")
-                #controllare che non ci siano anomalie
-                Bridge.serialWrite(ser, '1')
+                response = requests.post(URL, json={'id_gate':uuid, 'license': plate, 'color': color})
+                if response.status_code == 200:
+                    print("Open gate")
+                    Bridge.serialWrite(ser, '1')
+                else:
+                    print("Waiting for user's input")
                 attempt = 5
-
-    #response = requests.put(f'{BASE}/activity', json={'none':'stuff', 'userId':'franco', 'status':'ignored'}).
-    #response = requests.post(f'{BASE}/gate')
-    response = requests.get(f'{BASE}/login', auth=('Antonio', 'password'))
-    print(response.json())
-    jwt_expiry = response.json()['jwt_token_expiry']
-    jwt_refresh = response.json()['jwt_token']
-    # response = requests.post(f'{BASE}/gate', headers={'x-access-token':token}, json={'name':'placeholder'})
-    # print(response.json())
-
-    #response = requests.get(f'{BASE}/get', params={'jwt_refresh':jwt_refresh})
-    response = requests.get(f'{BASE}/gate', headers={'x-access-token':jwt_expiry})
-    print(response.json())
 
 if __name__ == '__main__':
     main()
