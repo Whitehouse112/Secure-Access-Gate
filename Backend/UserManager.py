@@ -1,6 +1,7 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 import database
 import sqlalchemy
+from datetime import datetime
 
 class UserManager:
 
@@ -55,14 +56,15 @@ class UserManager:
         except Exception as e:
             return 500
 
-    def checkLocation(self, location):
-        #TODO: check if location is already used (in particular datetime timestamp)
-        return True
-
-    def updateLocation(self, location):
-        #TODO: update location of the user
-        print(location)
-        return True
+    def updateLocation(self, id_user, location):
+        now = datetime.now()
+        date_time = now.strftime("%Y/%m/%g %H:%M:%S")
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("INSERT INTO Users_Location VALUES (:id_user, :date_time, :location)")
+                return conn.execute(stmt, id_user=id_user, date_time=date_time, location=location)
+        except Exception as e:
+            return 500
 
 class User:
     def __init__(self, id, email, password, jwt_refresh):

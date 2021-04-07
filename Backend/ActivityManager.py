@@ -2,7 +2,7 @@ import database
 import sqlalchemy
 from datetime import datetime
 
-class ActivityManager(object):
+class ActivityManager():
 
     def __init__(self):
         self.db = database.create_connection()

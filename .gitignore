@@ -1,7 +1,5 @@
 env/
-Bridge/files/
-train/
 .vscode/
-Backend/test.py
-Backend/__pycache__
+Bridge/files/config.txt
 Bridge/__pycache__
+Backend/__pycache__

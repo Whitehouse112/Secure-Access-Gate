@@ -1,11 +1,12 @@
-from flask import Flask, request, jsonify
-from flask_restful import Resource, Api
 import jwt
 import datetime
-from GateManager import GateManager
-from CarManager import CarManager
-from UserManager import UserManager
+from flask import Flask, request, jsonify
+from flask_restful import Resource, Api
 from ActivityManager import ActivityManager
+from AnomalyDetection import AnomalyDetection
+from CarManager import CarManager
+from GateManager import GateManager
+from UserManager import UserManager
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -14,10 +15,11 @@ api = Api(app)
 app.config['SECRET_KEY'] = 'Secret'
 basePath = '/api/v1'
 
+activityManager = ActivityManager()
+anomalyDetection = AnomalyDetection()
+carManager = CarManager()
 gateManager = GateManager()
 userManager = UserManager()
-activityManager = ActivityManager()
-carManager = CarManager()
 
 STATUS = ['granted', 'denied', 'ignored', 'pending', 'reported']
 COLOR = ['Black', 'Blue', 'Green', 'Gray', 'Red', 'White', 'Yellow', 'Cyan']
@@ -76,12 +78,9 @@ class ActivityAPI(Resource):
             return 'Internal server error', 500
         
         if len(activities) < 10:
-            anomaly = 1
+            anomaly = 0
         else:
-            # anomaly detection con la lista di attività sulla base del datetime
-            # controllare le attività dell'utente tramite anomaly detection
-            # anomaly = anomalyDetecion(activities)
-            anomaly = 2
+            anomaly = anomalyDetection.detect(activities)
 
         if anomaly > 1:
             outcome = 'Pending'
@@ -271,26 +270,26 @@ class LogoutUser(Resource):
         else:
             return 'Success', 200
             
-# class UpdateLocation(Resource):
-#     @token_required
-#     def post(self, current_user):
-        
-#         if not userManager.checkUser(current_user):
-#             return "User not found", 404
+class UpdateLocation(Resource):
+    @token_required
+    def post(self, current_user):
 
-#         content = request.get_json()
+        location = request.get_json()['Location']
+        if location is None:
+            return "Invalid input data", 400
 
-#         #TODO: insert location checks, return 400 if not OK
+        user = userManager.getUser(current_user)
+        if user == 500:
+            return "Server error", 500
+        if user is None:
+            return "User not found", 404 
 
-#         if not userManager.checkLocation(content):
-#             return "Location already exists", 409
-
-#         if userManager.updateLocation(content):
-#             return "Success", 200
-#         else:
-#             return "Internal server error", 500
-
-#TODO: Correct all the paths or the openapi
+        ret = userManager.updateLocation(current_user, location)
+        if ret == 500:
+            return "Internal server error", 500
+        else:
+            return "Success", 200
+            
 api.add_resource(ActivityAPI, f'{basePath}/activity')
 api.add_resource(CarAPI, f'{basePath}/car')
 api.add_resource(GateAPI, f'{basePath}/gate')
@@ -298,7 +297,7 @@ api.add_resource(RefreshJWT, f'{basePath}/jwt')
 api.add_resource(SigninUser, f'{basePath}/user/signin')
 api.add_resource(LoginUser, f'{basePath}/user/login')
 api.add_resource(LogoutUser, f'{basePath}/user/logout')
-#api.add_resource(UpdateLocation, f'{basePath}/user/location')
+api.add_resource(UpdateLocation, f'{basePath}/user/location')
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', debug=True)

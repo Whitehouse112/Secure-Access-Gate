@@ -1,7 +1,17 @@
 # Secure-Access-Gate
 IoT project for a secure access gate system
 
-## Requirements
+## Backend Requirements
+- flask
+- flask-restful
+- geopy
+- gunicorn
+- pyfcm
+- PyJWT
+- SQLAlchemy
+- sqlalchemy-pytds
+
+## Bridge Requirements
 - imutils
 - keras
 - numpy==1.18.4
@@ -9,6 +19,7 @@ IoT project for a secure access gate system
 - Pillow
 - pyserial
 - pytesseract
+- requests
 - tensorflow
 
 # Installation
@@ -20,6 +31,10 @@ In order to let the project work, users must:
     - connect E18-D80NK sensor to esp32-cam (blue=gnd, brown=5V, black=GPIO13)
     - connect lcd 7-segment 5161AS to esp32-cam (https://www.circuitbasics.com/arduino-7-segment-display-tutorial/ - E_segment=GPIO12, G_segment=GPIO2)
     - start esp32-cam and pair to pc with bluetooth (outgoing COM port must be annotated)
+    
++ BACKEND
+    - Create a database using the file "create_database.sql" into the Backend folder
+    - Create the API: all the url and function are contained in the openapi.yaml
 
 + BRIDGE
     - install tesseract (https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-v5.0.0-alpha.20201127.exe)
@@ -32,10 +47,24 @@ In order to let the project work, users must:
         - Arduino.ino
         - camera_pins.h
     + Backend
+        - api.py
+        - ActivityManager.py
+        - AnomalyDetection.py
+        - CarManager.py
+        - GateManager.py
+        - UserManager.py
+        - lof.py
+        - database.py
+        - app.yaml
+        - openapi.yaml
+        - requirements.txt
+        - create_database.sql
     + Bridge
         + files/
             - config.txt
+            - vehicle_color_haze_free_model.h5
         - Bridge.py
+        - ColorRecognition.py
         - main.py
         - Prediction.py
     - .gitignore
