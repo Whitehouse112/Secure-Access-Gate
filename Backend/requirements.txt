@@ -6,3 +6,4 @@ pyfcm
 PyJWT
 SQLAlchemy
 sqlalchemy-pytds
+google-cloud-storage
