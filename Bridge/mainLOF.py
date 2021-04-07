@@ -1,63 +1,136 @@
+import re
 from lof import LOF
-from matplotlib import pyplot as p
-import numpy as np
-
-# Calcolo lof per le coordinate geografiche
-
-# Punti presi a caso nell'intorno di pochi metri di un cancello di una casa random
-geographic_coordinates = [
- (44.773647, 10.874154),
- (44.773658, 10.874135),
- (44.773686, 10.874191),
- (44.773623, 10.874142),
- (44.773630, 10.874144),
- (44.773679, 10.874174),
- (44.773654, 10.874218),
- (44.773674, 10.874135),
- (44.773640, 10.874202)]
-
-lof = LOF("geodesic_distance", geographic_coordinates, normalize=True)
-
-# Esempi di outliers: punti presi a una casa di distanza, tre case di distanza, una via parallela
-for instance in [[44.773564, 10.874451], [44.773406, 10.874851], [44.774288, 10.874526]]:
-    # Per ogni istanza mi faccio tornare il valore di lof, se è >=1 il punto è outlier e lo coloro di rosso
-    # e lo faccio più grande più è ourlier, se è <1 è inlier e lo faccio verde
-    value = lof.local_outlier_factor(3, instance)
-    print(value, instance)
-    color = "#FF0000" if value > 1 else "#00FF00"
-    p.scatter(instance[0], instance[1], color=color, s=(value - 1) ** 2 * 10 + 20)
-
-# Disegno anche i punti forniti come coordinate del cancello in blu
-x,y = zip(*geographic_coordinates)
-p.scatter(x,y, 9, color="#0000FF")
-
-p.show()
-
-# Calcolo lof per gli orari (lasciato due assi per non cambiare il codice, la coordinata y è sempre 0)
-opening_hours_in_minutes = [
- (480, 0), #8:00
- (482, 0), #8:02
- (485, 0), #8:05
- (474, 0), #7:54
- (477, 0), #7:57
- (1110, 0), #18:30
- (1113, 0), #18:33
- (1107, 0), #18:27
- (1105, 0)] #18:25
 
 
-lof = LOF("euclidean_distance", opening_hours_in_minutes, normalize=False)
+def convertInMinutes(datetime):
+    h = re.search(' (.*?):', datetime)
+    hours = int(h.group(1))
+    min = re.search(':(.*):', datetime)
+    minutes = int(min.group(1))
+    return hours*60+minutes
 
-# Esempi di outliers: ore lontane da quelle inserite sopra
-for instance in [[840, 0], [900, 0], [1320, 0]]:
-    # Per ogni istanza mi faccio tornare il valore di lof, se è >=1 il punto è outlier e lo coloro di rosso
-    # e lo faccio più grande più è ourlier, se è <1 è inlier e lo faccio verde
-    value = lof.local_outlier_factor(3, instance)
-    print(value, instance)
-    color = "#FF0000" if value > 1 else "#00FF00"
-    p.scatter(instance[0], instance[1], color=color, s=(value - 1) ** 2 * 10 + 20)
 
-    # Disegno anche i punti forniti come orari in blu
-x, y = zip(*opening_hours_in_minutes)
-p.scatter(x, y, 9, color="#0000FF")
-p.show()
+def anomalyDetection(activities_list, new_activity):
+    opening_times_in_minutes = []
+    positions = []
+    for a in activities_list:
+        opening_times_in_minutes.append((convertInMinutes(a['date_time']), 0))
+    lofTimes = LOF("euclidean_distance", opening_times_in_minutes, normalize=False)
+
+    timeToCheck = convertInMinutes(new_activity['date_time'])
+    timeAnomaly = lofTimes.local_outlier_factor(3, (timeToCheck, 0))
+    if timeAnomaly > 1:
+        return timeAnomaly
+    else:
+        for a in activities_list:
+            positions.append(a['position'])
+        lofPositions = LOF("geodesic_distance", positions, normalize=False)
+
+        posistionAnomaly = lofPositions.local_outlier_factor(3, new_activity['position'])
+        if posistionAnomaly > 1:
+            return posistionAnomaly
+        else:
+            return 0
+
+
+# Codice che crea attività d'esempio per mostrare che la funzione sopra funziona,
+# nel codice del progetto basterà chiamare la funzione anomalyDetection passandogli la lista
+# di attività dell'utente e la nuova attività da controllare.
+
+# Lista di dizionari, ogni dizionario è un'attività
+activities = [
+{
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 08:00:00",
+    'position': (44.773647, 10.874154),
+    'outcome': "Granted"
+},
+{
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 08:02:00",
+    'position': (44.773658, 10.874135),
+    'outcome': "Granted"
+},
+{
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 08:05:00",
+    'position': (44.773686, 10.874191),
+    'outcome': "Granted"
+},
+{
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 07:54:00",
+    'position': (44.773623, 10.874142),
+    'outcome': "Granted"
+},
+{
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 07:57:00",
+    'position': (44.773630, 10.874144),
+    'outcome': "Granted"
+},
+{
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 18:30:00",
+    'position': (44.773679, 10.874174),
+    'outcome': "Granted"
+},
+{
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 18:33:00",
+    'position': (44.773654, 10.874218),
+    'outcome': "Granted"
+},
+{
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 18:27:00",
+    'position': (44.773674, 10.874135),
+    'outcome': "Granted"
+},
+{
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 18:25:00",
+    'position': (44.773640, 10.874202),
+    'outcome': "Granted"
+}
+]
+
+# Due esempi anomali
+activity_anomalaOrario = {
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 02:48:00",
+    'position': (44.773640, 10.874202),
+    'outcome': "Granted"
+}
+
+activity_anomalaPosizione = {
+    'id_user': 123,
+    'id_gate': 456,
+    'id_car': 'fb190gy',
+    'date_time': "2021/04/07 08:00:00",
+    'position': (45.773640, 10.874202),
+    'outcome': "Granted"
+}
+
+anomaly = anomalyDetection(activities, activity_anomalaPosizione)
+print(anomaly)
