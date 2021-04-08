@@ -281,6 +281,15 @@ class RefreshJWT(Resource):
         jwt_expiry = jwt.encode({'user':current_user, 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
         return jsonify({'jwt_token_expiry':jwt_expiry})
 
+class UpdateFCM(Resource):
+    @token_required
+    def post(self, current_user):
+        fcm_token = request.get_json['fcm_token']
+        if not fcm_token:
+            return "Invalid input data", 400
+        #TODO: update the database with the current
+        return 200
+
 class SigninUser(Resource):
     def post(self):
         
@@ -364,6 +373,7 @@ api.add_resource(CarAPI, f'{basePath}/car')
 api.add_resource(GateAPI, f'{basePath}/gate')
 api.add_resource(OpenGateAPI, f'{basePath}/gate/open')
 api.add_resource(RefreshJWT, f'{basePath}/jwt')
+api.add_resource(UpdateFCM, f'{basePath}/fcm')
 api.add_resource(SigninUser, f'{basePath}/user/signin')
 api.add_resource(LoginUser, f'{basePath}/user/login')
 api.add_resource(LogoutUser, f'{basePath}/user/logout')
