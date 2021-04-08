@@ -1,6 +1,6 @@
-import Bridge
-import Prediction
-import ColorRecognition
+import bridge
+import prediction
+import colorRecognition
 import requests
 from google.cloud import pubsub_v1
 
@@ -11,7 +11,7 @@ ser = None
 def main():
     
     attempt = 5
-    ser = Bridge.setup()
+    ser = bridge.setup()
 
     project_id='quiet-groove-306310'
     subscription_name = f'{uuid}-sub'
@@ -26,16 +26,16 @@ def main():
         except:
             sub_pull.cancel()
 
-        img = Bridge.loop(ser)
+        img = bridge.loop(ser)
         if img is not None:
 
-            plate = Prediction.prediction(img)
-            color = ColorRecognition.color_recognition(img)
+            plate = prediction.prediction(img)
+            color = colorRecognition.color_recognition(img)
 
             if plate is None:
                 if attempt > 0:
                     print("No plate found")
-                    Bridge.serialWrite(ser, '0')
+                    bridge.serialWrite(ser, '0')
                 else:
                     print("maximum number of attempts reached")
                 attempt -= 1
@@ -44,13 +44,13 @@ def main():
                 response = requests.post(URL, json={'id_gate':uuid, 'license': plate, 'color': color})
                 if response.status_code == 200:
                     print("Open gate")
-                    Bridge.serialWrite(ser, '1')
+                    bridge.serialWrite(ser, '1')
                 else:
                     print("Waiting for user's input")
                 attempt = 5
 
 def callback(message):
-    Bridge.serialWrite(ser, '1')
+    bridge.serialWrite(ser, '1')
     message.ack()
 
 if __name__ == '__main__':

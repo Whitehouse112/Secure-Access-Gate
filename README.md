@@ -54,11 +54,11 @@ In order to let the project work, users must:
             + create_database.sql
             + key.json
         - api.py
-        - ActivityManager.py
-        - AnomalyDetection.py
-        - CarManager.py
-        - GateManager.py
-        - UserManager.py
+        - activityManager.py
+        - anomalyDetection.py
+        - carManager.py
+        - gateManager.py
+        - userManager.py
         - database.py
         - lof.py
         - notification.py
@@ -71,9 +71,9 @@ In order to let the project work, users must:
         + files/
             - config.txt
             - vehicle_color_haze_free_model.h5
-        - Bridge.py
-        - ColorRecognition.py
+        - bridge.py
+        - colorRecognition.py
         - main.py
-        - Prediction.py
+        - prediction.py
     - .gitignore
     - README.md
