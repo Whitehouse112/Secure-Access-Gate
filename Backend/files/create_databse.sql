@@ -39,7 +39,7 @@ create table Users_Location(
 	Date_Time datetime DEFAULT current_timestamp NOT NULL,
 	Location nvarchar(max) NOT NULL
 	/*CONSTRAINT PK_Location primary key(ID, Date_Time) 
-	mettere questo vincolo signifa eliminare la possibilità di avere 
+	mettere questo vincolo signifa eliminare la possibilitï¿½ di avere 
 	incongruenze ed anomalie in termini di posizione degli utenti*/
 );
 
@@ -52,29 +52,29 @@ create table Accesses(
 	Photo nvarchar(max) /*url dell'immagine*/
 );
 
-/* Dati inseriti dal produttore che deve essere contattato
-dalle organizzazioni interessate*/
-create table Organizations(
-	/*UUID4*/
-	ID nvarchar(36) primary key NOT NULL,
-	Organization_Name nvarchar(450) NOT NULL UNIQUE,
-);
-
-create table Administrator(
-	ID_User int foreign key references Users(ID) NOT NULL,
-	ID_Organization nvarchar(36) default NULL foreign key references Organizations(ID),
-	CONSTRAINT PK_Administrator primary key(ID_User, ID_Organization)
-);
-
-create table Organization_Users(
-	ID_User int foreign key references Users(ID) NOT NULL,
-	ID_Organization nvarchar(36) foreign key references Organizations(ID) NOT NULL,
-	CONSTRAINT PK_Organization_User primary key(ID_User, ID_Organization)
-);
-
 create table Guests(
 	ID_Administrator int foreign key references Users(ID) NOT NULL,
 	ID_Car int foreign key references Cars(ID) NOT NULL,
 	Deadline datetime,
 	Nickname nvarchar(max)
 );
+
+/* Dati inseriti dal produttore che deve essere contattato
+dalle organizzazioni interessate*/
+-- create table Organizations(
+-- 	/*UUID4*/
+-- 	ID nvarchar(36) primary key NOT NULL,
+-- 	Organization_Name nvarchar(450) NOT NULL UNIQUE,
+-- );
+
+-- create table Administrator(
+-- 	ID_User int foreign key references Users(ID) NOT NULL,
+-- 	ID_Organization nvarchar(36) default NULL foreign key references Organizations(ID),
+-- 	CONSTRAINT PK_Administrator primary key(ID_User, ID_Organization)
+-- );
+
+-- create table Organization_Users(
+-- 	ID_User int foreign key references Users(ID) NOT NULL,
+-- 	ID_Organization nvarchar(36) foreign key references Organizations(ID) NOT NULL,
+-- 	CONSTRAINT PK_Organization_User primary key(ID_User, ID_Organization)
+-- );

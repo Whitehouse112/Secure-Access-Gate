@@ -9,6 +9,7 @@ from GateManager import GateManager
 from UserManager import UserManager
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+import pubsub
 
 app = Flask(__name__)
 api = Api(app)
@@ -85,6 +86,7 @@ class ActivityAPI(Resource):
         if anomaly > 1:
             outcome = 'Pending'
             ret_code = 202
+            # Notificare l'utente
         else:
             outcome = 'Granted'
             ret_code = 200
@@ -95,7 +97,6 @@ class ActivityAPI(Resource):
         else:
             return outcome, ret_code
         
-
     # @token_required
     # def put(self, current_user):
         
@@ -180,6 +181,7 @@ class GateAPI(Resource):
         if ret == 500:
             return 'Internal server error', 500
         else:
+            pubsub.createTopic(id_gate)
             return 'Success', 200
 
     @token_required
@@ -192,6 +194,19 @@ class GateAPI(Resource):
             return "Server error", 500
         else:
             return jsonify(gates)
+
+class OpenGateAPI(Resource):
+    @token_required
+    def post(self, current_user):
+
+        id_gate = request.get_json()['id_gate']
+        if id_gate is None:
+            return "Invalid input data", 400
+        if gateManager.checkSensors(id_gate) is None:
+            return "Invalid input data", 400
+
+        pubsub.publishTopic(id_gate)
+        return "Success", 200
 
 class RefreshJWT(Resource):
     def post(self):
@@ -293,6 +308,7 @@ class UpdateLocation(Resource):
 api.add_resource(ActivityAPI, f'{basePath}/activity')
 api.add_resource(CarAPI, f'{basePath}/car')
 api.add_resource(GateAPI, f'{basePath}/gate')
+api.add_resource(OpenGateAPI, f'{basePath}/gate/open')
 api.add_resource(RefreshJWT, f'{basePath}/jwt')
 api.add_resource(SigninUser, f'{basePath}/user/signin')
 api.add_resource(LoginUser, f'{basePath}/user/login')

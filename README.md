@@ -5,6 +5,8 @@ IoT project for a secure access gate system
 - flask
 - flask-restful
 - geopy
+- google-cloud-pubsub
+- google-cloud-storage
 - gunicorn
 - pyfcm
 - PyJWT
@@ -12,6 +14,7 @@ IoT project for a secure access gate system
 - sqlalchemy-pytds
 
 ## Bridge Requirements
+- google-cloud-pubsub
 - imutils
 - keras
 - numpy==1.18.4
@@ -47,18 +50,23 @@ In order to let the project work, users must:
         - Arduino.ino
         - camera_pins.h
     + Backend
+        - files/
+            + create_database.sql
+            + key.json
         - api.py
         - ActivityManager.py
         - AnomalyDetection.py
         - CarManager.py
         - GateManager.py
         - UserManager.py
-        - lof.py
         - database.py
+        - lof.py
+        - notification.py
+        - pubsub.py
+        - sotrage.py
         - app.yaml
         - openapi.yaml
         - requirements.txt
-        - create_database.sql
     + Bridge
         + files/
             - config.txt

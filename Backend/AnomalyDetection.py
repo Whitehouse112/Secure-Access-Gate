@@ -50,7 +50,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 08:00:00",
-    #     'position': (44.773647, 10.874154),
     #     'outcome': "Granted"
     # },
     # {
@@ -58,7 +57,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 08:02:00",
-    #     'position': (44.773658, 10.874135),
     #     'outcome': "Granted"
     # },
     # {
@@ -66,7 +64,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 08:05:00",
-    #     'position': (44.773686, 10.874191),
     #     'outcome': "Granted"
     # },
     # {
@@ -74,7 +71,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 07:54:00",
-    #     'position': (44.773623, 10.874142),
     #     'outcome': "Granted"
     # },
     # {
@@ -82,7 +78,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 07:57:00",
-    #     'position': (44.773630, 10.874144),
     #     'outcome': "Granted"
     # },
     # {
@@ -90,7 +85,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 18:30:00",
-    #     'position': (44.773679, 10.874174),
     #     'outcome': "Granted"
     # },
     # {
@@ -98,7 +92,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 18:33:00",
-    #     'position': (44.773654, 10.874218),
     #     'outcome': "Granted"
     # },
     # {
@@ -106,7 +99,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 18:27:00",
-    #     'position': (44.773674, 10.874135),
     #     'outcome': "Granted"
     # },
     # {
@@ -114,7 +106,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 18:25:00",
-    #     'position': (44.773640, 10.874202),
     #     'outcome': "Granted"
     # }
     # ]
@@ -125,7 +116,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 02:48:00",
-    #     'position': (44.773640, 10.874202),
     #     'outcome': "Granted"
     # }
 
@@ -134,7 +124,6 @@ class AnomalyDetection():
     #     'id_gate': 456,
     #     'id_car': 'fb190gy',
     #     'date_time': "2021/04/07 08:00:00",
-    #     'position': (45.773640, 10.874202),
     #     'outcome': "Granted"
     # }
 

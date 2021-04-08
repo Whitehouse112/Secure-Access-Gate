@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "quiet-groove-306310",
+  "private_key_id": "38d06c0ada079c7ebbc434f3f67ac6553cc577be",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCbTbHWmrIdCBtM\nx7Pxn0QftkTxPXPbagmdebY/yjKyAsudwp4sFsMUCfvDtw4M7Xdasob0thb+pnfv\ntER2vllodz6u/6D3tIV6AZ39D5Fbl3T1WPA7c89Af9zcdjT5ORv9/EgbpiV3r5TN\n9C1AcynoHxY2XpmsRJRVTaTkpaFw6jHh6N44IkvgXIek9AqllFAlRh0I7HaOFnrs\nPiTQK1YMVFEqMEE7RyuRevPQfIk6FHDZPIaQZMQGuxRA0CTvD9PhT3taW9njbPsb\n8q1tYCW6wip/1jIz41r7yUJqOBGMaDNBAy+KZPZ/fpeSIAQo5bYyI3JhcQv5S30k\n8TFFiMs1AgMBAAECggEAN+27gUcVpMniFv0GSxoprOf1nREd86MU0l7eKMvXBO9n\nx6kqUENkPoe34MxAJZyxMnr/igo3br6hi7QWQdMcHLhw3RHXNM2QkhcZ/+QG237I\nUoEUhryWoypI7iYtvqD3+ThM+ZQUgy06wA7S6xZuPZdQZwUbf4P1DWFYZDVX1fMZ\nc3WL3cIqzJ0i8AvloNxbnc+4Xz6zqkdhB7WP/odSUMabJkPiD1co+ScBjuD6K1Om\nGDNoCUuvVmH33u3XZwV4oFr8/zNndsMBbKFX2awcBCT9mZ167kULF76vJqy5ZjFx\n0rEa20STT7KIdBKM8k6RuY8m4g/WYkg8cGW87LYdMwKBgQDSC1tc5enzULd1Twm/\neXeMHNjk9eYacqqGzvXIQ2AzMdiJkKOJva1cs/UUmu5ZHLrfvxcx2R83rsoo/G8Q\nJwE8f1xHn3h4JDc+MMLjLzUKtxyA4B9Fz8SmxSxy9jhbcFafOPbxQExmqSZvR6h0\n5RhVwgTkzsq1gW37djLq/R9KBwKBgQC9SElcu1HKtZ67K0MYH+eL3HB4mMD8Hmz/\nNxB+N6SYBkzFRkoel5e7oW//Qzz9D6AQ9GH+jAdUZ+/PVRYcMlyz5pEYOz6Yjyt/\nIOyRP5LPNtrJk8sHAwO3/CESUc5IJsPo5+pBI1oebm24GKBHN3xOwDwjYXOsUEzl\nIpnhUPbh4wKBgCyxf/JHdb1xSmgqtj9I4Fgu9zPY4upzxbdDqGbBd2HNVG8JGNNB\nSfc0z4xf3yGVDGp5pbzUn2Dgz2FjPVqpggjWbNNMqnyd8CdKht2CeP3bsrP1fJIF\nQKnfwLKBk8JZKAVfQKRa8ybRDT2WeNDOwpvU2ee53MY8USO1peX8kEDXAoGBAJFt\npbgS0A/wJSnnXmB9uthxoRR3QOc0tUgNVaW0OMj5Jij4DWCd1l259qPoVEaWp8P/\nD/+UNNl8Fft1g0xcwW8Tem1kr35lmeTONhSPBMwieE0iOX6EqWnF1N8PbW9wIVuk\nPA6aC9aPv8sPWK3/CoozFsGUUVyWQc5XHGXKYDVDAoGAcg0kICFee1OOwW/JAPd5\nWZ26nlIRgwv0cL13pN5Dk6ksFneTbXZ0EY9jL4fq7grTi5Lhw6wFBBrBxXMVdYBX\nV1X9coRR920O9TiH8QAjTvEtPeP5+6y0rObi46sZ2nUS2GStTlxX74aPC8Ldh5G5\n0SjaiREXwEiToYZNTfej8XA=\n-----END PRIVATE KEY-----\n",
+  "client_email": "service-iot@quiet-groove-306310.iam.gserviceaccount.com",
+  "client_id": "103168992139016282386",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/service-iot%40quiet-groove-306310.iam.gserviceaccount.com"
+}

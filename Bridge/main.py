@@ -2,22 +2,36 @@ import Bridge
 import Prediction
 import ColorRecognition
 import requests
+from google.cloud import pubsub_v1
 
 uuid = "d8c0e668-b59e-455e-af78-77470ba291c5"
-attempt = 5
 URL = 'http://127.0.0.1:5000/api/v1/activity'
+ser = None
 
 def main():
-
-    global attempt
-
+    
+    attempt = 5
     ser = Bridge.setup()
+
+    project_id='quiet-groove-306310'
+    subscription_name = f'{uuid}-sub'
+    subscriber = pubsub_v1.SubscriberClient()
+    subscription_path = subscriber.subscription_path(project_id, subscription_name)
+    sub_pull = subscriber.subscribe(subscription_path, callback=callback)
+    
     while (True):
+        
+        try:
+            sub_pull.result()
+        except:
+            sub_pull.cancel()
+
         img = Bridge.loop(ser)
         if img is not None:
+
             plate = Prediction.prediction(img)
-            #color = ColorRecognition.color_recognition(img)
-            color = "White"
+            color = ColorRecognition.color_recognition(img)
+
             if plate is None:
                 if attempt > 0:
                     print("No plate found")
@@ -34,6 +48,10 @@ def main():
                 else:
                     print("Waiting for user's input")
                 attempt = 5
+
+def callback(message):
+    Bridge.serialWrite(ser, '1')
+    message.ack()
 
 if __name__ == '__main__':
     main()
