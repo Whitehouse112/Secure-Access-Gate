@@ -21,9 +21,9 @@ import os
 from PIL import Image
 from base64 import b64decode
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="Backend/files/key.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="files/key.json"
 client = Storage()
 
-img = open("Backend\\test.jpg", 'rb')
+img = open("test.jpg", 'rb')
 content = img.read()
-client.upload_image(content, "test6")
+client.upload_image(content, "test7")
