@@ -15,7 +15,6 @@ class AnomalyDetection():
     def detect_dateTime(self, activities_list):
 
         opening_times_in_minutes = []
-        positions = []
 
         now = datetime.now()
         date_time = now.strftime("%Y/%m/%g %H:%M:%S")
