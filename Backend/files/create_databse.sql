@@ -30,6 +30,8 @@ create table Gates(
 	ID_User int foreign key references Users(ID) NOT NULL,
 	Name nvarchar(max) NOT NULL,
 	Location nvarchar(max) NOT NULL,
+	Latitude numeric(9,6) NOT NULL,
+	Longitude numeric(9,6) NOT NULL,
 	Photo nvarchar(max)
 	CONSTRAINT PK_Gate primary key(ID, ID_User)
 );
@@ -37,7 +39,8 @@ create table Gates(
 create table Users_Location(
 	ID int foreign key references Users(ID) NOT NULL,
 	Date_Time datetime DEFAULT current_timestamp NOT NULL,
-	Location nvarchar(max) NOT NULL
+	Latitude numeric(9,6) NOT NULL,
+	Longitude numeric(9,6) NOT NULL,
 );
 
 create table Accesses(

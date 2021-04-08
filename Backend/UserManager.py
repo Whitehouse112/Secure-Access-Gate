@@ -56,13 +56,13 @@ class UserManager:
         except Exception as e:
             return 500
 
-    def updateLocation(self, id_user, location):
+    def updateLocation(self, id_user, latitude, longitude):
         now = datetime.now()
         date_time = now.strftime("%Y/%m/%g %H:%M:%S")
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("INSERT INTO Users_Location VALUES (:id_user, :date_time, :location)")
-                return conn.execute(stmt, id_user=id_user, date_time=date_time, location=location)
+                stmt = sqlalchemy.text("INSERT INTO Users_Location VALUES (:id_user, :date_time, :latitude, _longitude)")
+                return conn.execute(stmt, id_user=id_user, date_time=date_time, latitude=latitude, longitude=longitude)
         except Exception as e:
             return 500
     

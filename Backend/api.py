@@ -38,8 +38,6 @@ def token_required(f):
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            #TODO: correct with actual user db information
-            #current_user = userManager.getUser(data['user'])
             current_user = data['user']
         except:
             return "Token is missing or invalid", 401
@@ -54,6 +52,7 @@ class ActivityAPI(Resource):
         id_gate = request.get_json()['id_gate']
         license_plate = request.get_json()['license']
         color = request.get_json()['color']
+        #TODO: attività: leggere campo foto (photo = request.get_json()['photo'])
         
         if  gateManager.checkSensors(id_gate) is None:
             return "Invalid input data", 400
@@ -104,11 +103,13 @@ class ActivityAPI(Resource):
         if time_anomaly >= 1 or location_anomaly == 1:
             outcome = 'Pending'
             ret_code = 202
-            # Notificare l'utente
+            #TODO: notificare l'utente a seguito della richiesta di Pending
         else:
             outcome = 'Granted'
             ret_code = 200
         
+        #TODO: aggiungere foto al cloud ed ottenere il link
+        #TODO: aggiungere campo photo alla funzione addActivity
         ret = activityManager.addActivity(user, id_gate, car['ID'], outcome)
         if ret == 500:
             return 'Internal server error', 500
@@ -158,7 +159,7 @@ class CarAPI(Resource):
         if color not in COLOR:
             return "Invalid input data", 400
 
-        #Eventually check brand
+        #TODO: eventualmente controllare anche il brand
         car = carManager.checkCar(current_user, license_plate, color)
         if car == 500:
             return 'Server error', 500
@@ -178,7 +179,9 @@ class GateAPI(Resource):
         id_gate = request.get_json()['id_gate']
         name = request.get_json()['name']
         location = request.get_json()['location']
-        # photo = request.get_json()['photo']
+        latitude = request.get_json()['latitude']
+        longitude = request.get_json()['longitude']
+        #TODO: gate: leggere campo foto (photo = request.get_json()['photo'])
 
         if id_gate is None:
             return "Invalid input data", 400
@@ -188,6 +191,10 @@ class GateAPI(Resource):
             return "Invalid input data", 400
         if location is None:
             return "Invalid input data", 400
+        if latitude is None:
+            return "Invalid input data", 400
+        if longitude is None:
+            return "Invalid input data", 400
 
         gate = gateManager.checkGate(current_user, id_gate)
         if gate == 500:
@@ -195,7 +202,9 @@ class GateAPI(Resource):
         if gate is not None:
             return 'Gate already exists', 409
 
-        ret = gateManager.addGate(current_user, id_gate, name, location)
+        #TODO: aggiungere foto al cloud ed ottenere il link
+        #TODO: aggiungere campo foto alla funzione addGate
+        ret = gateManager.addGate(current_user, id_gate, name, location, latitude, longitude)
         if ret == 500:
             return 'Internal server error', 500
         else:
@@ -307,8 +316,11 @@ class UpdateLocation(Resource):
     @token_required
     def post(self, current_user):
 
-        location = request.get_json()['Location']
-        if location is None:
+        latitude = request.get_json()['latitude']
+        longitude = request.get_json()['longitude']
+        if latitude is None:
+            return "Invalid input data", 400
+        if longitude is None:
             return "Invalid input data", 400
 
         user = userManager.getUser(current_user)
@@ -317,7 +329,7 @@ class UpdateLocation(Resource):
         if user is None:
             return "User not found", 404 
 
-        ret = userManager.updateLocation(current_user, location)
+        ret = userManager.updateLocation(current_user, latitude, longitude)
         if ret == 500:
             return "Internal server error", 500
         else:
