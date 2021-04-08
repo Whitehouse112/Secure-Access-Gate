@@ -17,10 +17,13 @@ import requests
 
 from storage import Storage
 import io
+import os
 from PIL import Image
 from base64 import b64decode
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="Backend/files/key.json"
 client = Storage()
 
-img = open("2.png", 'rb')
-client.upload_image(img, "test5")
+img = open("Backend\\test.jpg", 'rb')
+content = img.read()
+client.upload_image(content, "test6")

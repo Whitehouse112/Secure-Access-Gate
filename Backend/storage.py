@@ -1,6 +1,6 @@
 from google.cloud import storage
 
-BUCKET_NAME = 'secure-access-photos'
+BUCKET_NAME = 'iot-project'
 
 class Storage:
     def __init__(self):
@@ -9,11 +9,10 @@ class Storage:
     def upload_image(self, file, blob_name):
         bucket = self.client.bucket(BUCKET_NAME)
         blob = bucket.blob(blob_name)
-        #blob.make_public()
+        blob.make_public()
         try:
-            blob.upload_from_string(file)
-        except Exception as e:
-            print(e)
+            blob.upload_from_file(file)
+        except GoogleCloudError:
             return 500
         return 'Success'
 
