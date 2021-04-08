@@ -87,8 +87,8 @@ class ActivityAPI(Resource):
         if time_anomaly == 0:
             # ottengo la lista delle ultime posizioni dell'utente e controllo le
             # anomalie in termini di incongruenze con l'attuale posizione
-            current_position = gateManager.checkGate(user, id_gate)['Location']
-            if current_position is None:
+            current_location = gateManager.checkGate(user, id_gate)['Location']
+            if current_location is None:
                 return "Gate not found", 404
             locations = userManager.getLocations(user)
             if locations == 500:
@@ -96,7 +96,7 @@ class ActivityAPI(Resource):
             if len(locations) < 3:
                 location_anomaly = 0
             else:
-                location_anomaly = anomalyDetection.detect_locations(locations, current_position)
+                location_anomaly = anomalyDetection.detect_locations(locations, current_location)
         else:
             location_anomaly = 0
 
