@@ -65,6 +65,14 @@ class UserManager:
                 return conn.execute(stmt, id_user=id_user, date_time=date_time, location=location)
         except Exception as e:
             return 500
+    
+    def getLocations(self, id_user):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("select top 5 * from Users_Location where ID=:id_user order by Date_Time desc")
+                return conn.execute(stmt, id_user=id_user)
+        except Exception as e:
+            return 500
 
 class User:
     def __init__(self, id, email, password, jwt_refresh):

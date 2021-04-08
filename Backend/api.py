@@ -74,17 +74,30 @@ class ActivityAPI(Resource):
         if car is None:
             return 'Car not found', 404
 
+        # ottengo la lista di attività dell'utente e controllo le
+        # anomalie in termini di incongruenze con data e ora
         activities = activityManager.getActivities(user, id_gate)
         if activities == 500:
             return 'Internal server error', 500
-        
-        if len(activities) < 10:
-            anomaly = 0
+        if len(activities) < 5:
+            time_anomaly = 0
         else:
-            anomaly = anomalyDetection.detect_dateTime(activities)
+            time_anomaly = anomalyDetection.detect_dateTime(activities)
 
-        #anomaly = anomalyDetection.detect_position("position_list", "current_position")
+        # ottengo la lista delle ultime posizioni dell'utente e controllo le
+        # anomalie in termini di incongruenze con l'attuale posizione
+        current_position = gateManager.checkGate(user, id_gate)['Location']
+        if current_position is None:
+            return "Gate not found", 404
+        locations = userManager.getLocations(user)
+        if locations == 500:
+            return 'Internal server error', 500
+        if len(locations) < 3:
+            location_anomaly = 0
+        else:
+            location_anomaly = anomalyDetection.detect_locations(locations, current_position)
 
+        # controllo se sono state rilevate o meno delle anomalie
         if anomaly > 1:
             outcome = 'Pending'
             ret_code = 202

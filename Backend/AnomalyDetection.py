@@ -31,5 +31,5 @@ class AnomalyDetection():
         else:
             return 0
 
-    def detect_position(self, position_list, current_poistion):
+    def detect_locations(self, position_list, current_poistion):
         print("prova")
