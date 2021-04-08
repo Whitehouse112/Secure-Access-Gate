@@ -7,3 +7,4 @@ PyJWT
 SQLAlchemy
 sqlalchemy-pytds
 google-cloud-storage
+google-cloud-pubsub
