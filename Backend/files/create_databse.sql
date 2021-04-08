@@ -30,7 +30,7 @@ create table Gates(
 	ID_User int foreign key references Users(ID) NOT NULL,
 	Name nvarchar(max) NOT NULL,
 	Location nvarchar(max) NOT NULL,
-	Photo nvarchar(max) /*url dell'immagine*/
+	Photo nvarchar(max)
 	CONSTRAINT PK_Gate primary key(ID, ID_User)
 );
 
@@ -38,9 +38,6 @@ create table Users_Location(
 	ID int foreign key references Users(ID) NOT NULL,
 	Date_Time datetime DEFAULT current_timestamp NOT NULL,
 	Location nvarchar(max) NOT NULL
-	/*CONSTRAINT PK_Location primary key(ID, Date_Time) 
-	mettere questo vincolo signifa eliminare la possibilit� di avere 
-	incongruenze ed anomalie in termini di posizione degli utenti*/
 );
 
 create table Accesses(
@@ -49,7 +46,7 @@ create table Accesses(
 	ID_Car int foreign key references Cars(ID) NOT NULL,
 	Date_Time datetime DEFAULT current_timestamp,
 	Outcome nvarchar(10) NOT NULL CHECK (Outcome IN('Granted', 'Denied', 'Ignored', 'Pending', 'Reported')),
-	Photo nvarchar(max) /*url dell'immagine*/
+	Photo nvarchar(max)
 );
 
 create table Guests(
