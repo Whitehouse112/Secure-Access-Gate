@@ -32,4 +32,13 @@ class AnomalyDetection():
             return 0
 
     def detect_locations(self, locations_list, current_location):
-        print("prova")
+
+        locations = [x['Location'] for x in locations_list]
+
+        if locations[0] != current_location:
+            return 1
+
+        # controllare le posizioni passate
+        # return 1 se c'è errore
+        # return 0 altrimenti
+        return 0

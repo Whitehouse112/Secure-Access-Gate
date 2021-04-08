@@ -93,7 +93,7 @@ class ActivityAPI(Resource):
             locations = userManager.getLocations(user)
             if locations == 500:
                 return 'Internal server error', 500
-            if len(locations) < 3:
+            if len(locations) < 5:
                 location_anomaly = 0
             else:
                 location_anomaly = anomalyDetection.detect_locations(locations, current_location)
@@ -101,7 +101,7 @@ class ActivityAPI(Resource):
             location_anomaly = 0
 
         # controllo se sono state rilevate o meno delle anomalie
-        if time_anomaly > 1 or location_anomaly > 1:
+        if time_anomaly >= 1 or location_anomaly == 1:
             outcome = 'Pending'
             ret_code = 202
             # Notificare l'utente
