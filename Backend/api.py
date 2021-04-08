@@ -81,7 +81,9 @@ class ActivityAPI(Resource):
         if len(activities) < 10:
             anomaly = 0
         else:
-            anomaly = anomalyDetection.detect(activities)
+            anomaly = anomalyDetection.detect_dateTime(activities)
+
+        #anomaly = anomalyDetection.detect_position("position_list", "current_position")
 
         if anomaly > 1:
             outcome = 'Pending'
