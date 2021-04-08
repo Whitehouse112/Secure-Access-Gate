@@ -2,11 +2,11 @@ import jwt
 import datetime
 from flask import Flask, request, jsonify
 from flask_restful import Resource, Api
-from ActivityManager import ActivityManager
-from AnomalyDetection import AnomalyDetection
-from CarManager import CarManager
-from GateManager import GateManager
-from UserManager import UserManager
+from activityManager import ActivityManager
+from anomalyDetection import AnomalyDetection
+from carManager import CarManager
+from gateManager import GateManager
+from userManager import UserManager
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import pubsub
