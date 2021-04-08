@@ -84,21 +84,24 @@ class ActivityAPI(Resource):
         else:
             time_anomaly = anomalyDetection.detect_dateTime(activities)
 
-        # ottengo la lista delle ultime posizioni dell'utente e controllo le
-        # anomalie in termini di incongruenze con l'attuale posizione
-        current_position = gateManager.checkGate(user, id_gate)['Location']
-        if current_position is None:
-            return "Gate not found", 404
-        locations = userManager.getLocations(user)
-        if locations == 500:
-            return 'Internal server error', 500
-        if len(locations) < 3:
-            location_anomaly = 0
+        if time_anomaly == 0:
+            # ottengo la lista delle ultime posizioni dell'utente e controllo le
+            # anomalie in termini di incongruenze con l'attuale posizione
+            current_position = gateManager.checkGate(user, id_gate)['Location']
+            if current_position is None:
+                return "Gate not found", 404
+            locations = userManager.getLocations(user)
+            if locations == 500:
+                return 'Internal server error', 500
+            if len(locations) < 3:
+                location_anomaly = 0
+            else:
+                location_anomaly = anomalyDetection.detect_locations(locations, current_position)
         else:
-            location_anomaly = anomalyDetection.detect_locations(locations, current_position)
+            location_anomaly = 0
 
         # controllo se sono state rilevate o meno delle anomalie
-        if anomaly > 1:
+        if time_anomaly > 1 or location_anomaly > 1:
             outcome = 'Pending'
             ret_code = 202
             # Notificare l'utente
