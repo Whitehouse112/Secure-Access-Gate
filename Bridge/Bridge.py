@@ -54,7 +54,7 @@ def useData(ser):
         inbuffer.clear()
 
         # Converto l'immagine in formato openCV
-        return np.array(img) 
+        return np.array(img), bytestream
     else:
         return serialWrite(ser, '0')
 

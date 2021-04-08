@@ -32,12 +32,13 @@ class AnomalyDetection():
 
     def detect_locations(self, locations_list, current_location):
 
-        locations = [x['Location'] for x in locations_list]
+        current_location = tuple(current_location['Latitude'] + current_location['Longitude'])
+        locations = [tuple(x['Latitude'] + x['Longitude']) for x in locations_list]
 
         if locations[0] != current_location:
             return 1
 
-        # controllare le posizioni passate
+        #TODO: controllare le posizioni passate
         # return 1 se c'è errore
         # return 0 altrimenti
         return 0

@@ -26,7 +26,7 @@ def main():
         except:
             sub_pull.cancel()
 
-        img = bridge.loop(ser)
+        img, bytestream = bridge.loop(ser)
         if img is not None:
 
             plate = prediction.prediction(img)
@@ -41,7 +41,7 @@ def main():
                 attempt -= 1
             else:
                 print(f"plate found: {plate}")
-                response = requests.post(URL, json={'id_gate':uuid, 'license': plate, 'color': color})
+                response = requests.post(URL, json={'id_gate':uuid, 'license': plate, 'color': color, 'photo': bytestream})
                 if response.status_code == 200:
                     print("Open gate")
                     bridge.serialWrite(ser, '1')
