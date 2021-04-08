@@ -15,13 +15,13 @@ class ActivityManager():
         except Exception as e:
             return 500
 
-    def addActivity(self, id_user, id_gate, id_car, outcome):
+    def addActivity(self, id_user, id_gate, id_car, outcome, photo):
         now = datetime.now()
         date_time = now.strftime("%Y/%m/%g %H:%M:%S")
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("INSERT INTO Accesses (ID_User, ID_Gate, ID_Car, Date_Time, Outcome) VALUES (:id_user, :id_gate, :id_car, :date_time, :outcome)")
-                return conn.execute(stmt, id_user=id_user, id_gate=id_gate, id_car=id_car, date_time=date_time, outcome=outcome)
+                stmt = sqlalchemy.text("INSERT INTO Accesses VALUES (:id_user, :id_gate, :id_car, :date_time, :outcome, :photo)")
+                return conn.execute(stmt, id_user=id_user, id_gate=id_gate, id_car=id_car, date_time=date_time, outcome=outcome, photo=photo)
         except Exception as e:
             return 500
 

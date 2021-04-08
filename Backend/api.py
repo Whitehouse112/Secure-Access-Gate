@@ -1,5 +1,6 @@
 import jwt
 import datetime
+import os
 from flask import Flask, request, jsonify
 from flask_restful import Resource, Api
 from activityManager import ActivityManager
@@ -7,6 +8,8 @@ from anomalyDetection import AnomalyDetection
 from carManager import CarManager
 from gateManager import GateManager
 from userManager import UserManager
+from pubsub import PubSub
+from storage import Storage
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import pubsub
@@ -15,12 +18,17 @@ app = Flask(__name__)
 api = Api(app)
 app.config['SECRET_KEY'] = 'Secret'
 basePath = '/api/v1'
+photo_url = "https://storage.googleapis.com/secure-access-photos/"
+#TODO: eliminare prima di caricare su cloud
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="files/key.json"
 
 activityManager = ActivityManager()
 anomalyDetection = AnomalyDetection()
 carManager = CarManager()
 gateManager = GateManager()
 userManager = UserManager()
+storage = Storage()
+pubsub = PubSub()
 
 STATUS = ['granted', 'denied', 'ignored', 'pending', 'reported']
 COLOR = ['Black', 'Blue', 'Green', 'Gray', 'Red', 'White', 'Yellow', 'Cyan']
@@ -52,16 +60,18 @@ class ActivityAPI(Resource):
         id_gate = request.get_json()['id_gate']
         license_plate = request.get_json()['license']
         color = request.get_json()['color']
-        #TODO: attività: leggere campo foto (photo = request.get_json()['photo'])
+        photo = request.get_json()['photo']
         
-        if  gateManager.checkSensors(id_gate) is None:
+        if gateManager.checkSensors(id_gate) is None:
             return "Invalid input data", 400
         if license_plate is None or len(license_plate) != 7:
             return "Invalid input data", 400
         if color not in COLOR:
             return "Invalid input data", 400
+        if photo is None:
+            return "Invalid input data", 400
 
-        user = userManager.checkGate(id_gate)[0]
+        user = userManager.checkGate(id_gate)['ID_User']
         if user == 500:
             return 'Internal server error', 500
         if user is None:
@@ -95,6 +105,7 @@ class ActivityAPI(Resource):
             if len(locations) < 5:
                 location_anomaly = 0
             else:
+                #TODO: completare funzione anomaly detection locations
                 location_anomaly = anomalyDetection.detect_locations(locations, current_location)
         else:
             location_anomaly = 0
@@ -108,9 +119,15 @@ class ActivityAPI(Resource):
             outcome = 'Granted'
             ret_code = 200
         
-        #TODO: aggiungere foto al cloud ed ottenere il link
-        #TODO: aggiungere campo photo alla funzione addActivity
-        ret = activityManager.addActivity(user, id_gate, car['ID'], outcome)
+        # carico l'immagine su cloud storage
+        date_time = datetime.now()
+        date_time = date_time.strftime("%Y/%m/%g-%H:%M:%S")
+        photo_name = f"accesses/{id_gate}/{date_time}"
+        ret = storage.upload_image(photo, photo_name)
+        if ret == 500:
+            return 'Internal server error', 500
+            
+        ret = activityManager.addActivity(user, id_gate, car['ID'], outcome, photo_url+photo_name)
         if ret == 500:
             return 'Internal server error', 500
         else:
@@ -181,7 +198,7 @@ class GateAPI(Resource):
         location = request.get_json()['location']
         latitude = request.get_json()['latitude']
         longitude = request.get_json()['longitude']
-        #TODO: gate: leggere campo foto (photo = request.get_json()['photo'])
+        photo = request.get_json()['photo']
 
         if id_gate is None:
             return "Invalid input data", 400
@@ -202,9 +219,16 @@ class GateAPI(Resource):
         if gate is not None:
             return 'Gate already exists', 409
 
-        #TODO: aggiungere foto al cloud ed ottenere il link
-        #TODO: aggiungere campo foto alla funzione addGate
-        ret = gateManager.addGate(current_user, id_gate, name, location, latitude, longitude)
+        if photo is not None:
+            # se presente, carico l'immagine su cloud storage
+            photo_name = f"gates/{current_user}/{id_gate}"
+            ret = storage.upload_image(photo, photo_name)
+            if ret == 500:
+                return 'Internal server error', 500
+            ret = gateManager.addGate(current_user, id_gate, name, location, latitude, longitude, photo_url+photo_name)
+        else:
+            ret = gateManager.addGate(current_user, id_gate, name, location, latitude, longitude, None)
+        
         if ret == 500:
             return 'Internal server error', 500
         else:

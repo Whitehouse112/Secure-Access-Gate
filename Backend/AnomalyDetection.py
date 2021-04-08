@@ -14,13 +14,11 @@ class AnomalyDetection():
 
     def detect_dateTime(self, activities_list):
 
-        opening_times_in_minutes = []
 
         now = datetime.now()
         date_time = now.strftime("%Y/%m/%g %H:%M:%S")
 
-        for a in activities_list:
-            opening_times_in_minutes.append((convertInMinutes(a['date_time']), 0))
+        opening_times_in_minutes = [(convertInMinutes(x['date_time']), 0) for x in activities_list]
         lofTimes = LOF("euclidean_distance", opening_times_in_minutes, normalize=False)
 
         timeToCheck = convertInMinutes(date_time)

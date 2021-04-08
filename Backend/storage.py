@@ -10,9 +10,8 @@ class Storage:
         bucket = self.client.bucket(BUCKET_NAME)
         blob = bucket.blob(blob_name)
         try:
-            blob.upload_from_string(file)
+            blob.upload_from_string(file, content_type='image/jpeg')
         except Exception as e:
-            print(e)
             return 500
         return 'Success'
 

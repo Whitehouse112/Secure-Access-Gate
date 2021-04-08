@@ -26,4 +26,4 @@ client = Storage()
 
 img = open("test.jpg", 'rb')
 content = img.read()
-client.upload_image(content, "test7")
+client.upload_image(content, "accesses/test 7")
