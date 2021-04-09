@@ -105,7 +105,6 @@ class ActivityAPI(Resource):
             if len(locations) < 5:
                 location_anomaly = 0
             else:
-                #TODO: completare funzione anomaly detection locations
                 location_anomaly = anomalyDetection.detect_locations(locations, current_location)
         else:
             location_anomaly = 0
@@ -179,7 +178,7 @@ class CarAPI(Resource):
         #TODO: eventualmente controllare anche il brand
         car = carManager.checkCar(current_user, license_plate, color)
         if car == 500:
-            return 'Server error', 500
+            return 'Internal server error', 500
         if car is not None:
             return "Car already exists", 409
 
@@ -215,7 +214,7 @@ class GateAPI(Resource):
 
         gate = gateManager.checkGate(current_user, id_gate)
         if gate == 500:
-            return 'Server error', 500
+            return 'Internal server error', 500
         if gate is not None:
             return 'Gate already exists', 409
 
@@ -239,12 +238,12 @@ class GateAPI(Resource):
     def get(self, current_user):
 
         gates = gateManager.getGates(current_user)
+        if gates == 500:
+            return "Internal server error", 500
         if gates is None:
             return "No Gate found", 404
-        if gates == 500:
-            return "Server error", 500
-        else:
-            return jsonify(gates)
+
+        return jsonify(gates)
 
 class OpenGateAPI(Resource):
     @token_required
@@ -258,6 +257,52 @@ class OpenGateAPI(Resource):
 
         pubsub.publishTopic(id_gate)
         return "Success", 200
+
+class GuestAPI(Resource):
+    @token_required
+    def post(self, current_user):
+
+        nickname = request.get_json()['nickname']
+        #TODO: controllare formati date_time
+        dead_line = request.get_json()['dead_line']
+        license_plate = request.get_json()['license']
+        color = request.get_json()['color']
+        brand = request.get_json()['brand']
+
+        if license_plate is None or len(license_plate) != 7:
+            return "Invalid input data", 400
+        if color not in COLOR:
+            return "Invalid input data", 400
+        
+        #TODO: eventualmente controllare anche il brand
+        car = carManager.checkCar(current_user, license_plate, color)
+        if car == 500:
+            return 'Internal server error', 500
+        if car is None:
+            ret = carManager.addCar(current_user, license_plate, color, brand)
+            if ret == 500:
+                return 'Internal server error', 500
+            car = carManager.checkCar(current_user, license_plate, color)
+            if car == 500:
+                return 'Internal server error', 500
+
+        id_car = car['ID']
+        ret = userManager.addGuest(current_user, id_car, dead_line, nickname)
+        if ret == 500:
+            return 'Internal server error', 500
+        else:
+            return 'Success', 200
+
+    @token_required
+    def get(self, current_user):
+
+        guests = userManager.getGuests(current_user)
+        if guests == 500:
+            return "Internal server error", 500
+        if guests is None:
+            return "No Guests found", 404
+        
+        return jsonify(guests)
 
 class RefreshJWT(Resource):
     def post(self):
@@ -296,7 +341,7 @@ class SigninUser(Resource):
         content = request.get_json()
         user = userManager.checkUser(content['email'])
         if user == 500:
-            return 'Server error', 500
+            return 'Internal server error', 500
         if user is not None:
             return 'User already exists', 409
 
@@ -335,7 +380,7 @@ class LogoutUser(Resource):
         
         user = userManager.getUser(current_user)
         if user == 500:
-            return "Server error", 500
+            return "Internal server error", 500
         if user is None:
             return "User not found", 404 
 
@@ -358,7 +403,7 @@ class UpdateLocation(Resource):
 
         user = userManager.getUser(current_user)
         if user == 500:
-            return "Server error", 500
+            return "Internal server error", 500
         if user is None:
             return "User not found", 404 
 
@@ -372,6 +417,7 @@ api.add_resource(ActivityAPI, f'{basePath}/activity')
 api.add_resource(CarAPI, f'{basePath}/car')
 api.add_resource(GateAPI, f'{basePath}/gate')
 api.add_resource(OpenGateAPI, f'{basePath}/gate/open')
+api.add_resource(GuestAPI, f'{basePath}/guest')
 api.add_resource(RefreshJWT, f'{basePath}/jwt')
 api.add_resource(UpdateFCM, f'{basePath}/fcm')
 api.add_resource(SigninUser, f'{basePath}/user/signin')

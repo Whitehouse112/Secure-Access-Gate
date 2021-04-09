@@ -40,6 +40,22 @@ class UserManager:
         except Exception as e:
             return 500
 
+    def getGuests(self, id_user):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("SELECT * FROM Guests WHERE ID_Administrator=:id_user")
+                return conn.execute(stmt, id_user=id_user).fetchall()
+        except Exception as e:
+            return 500
+
+    def addguest(self, id_user, id_car, dead_line, nickname):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("INSERT INTO Guests VALUES (:id_user, :id_car, :dead_line, :nickname)")
+                return conn.execute(stmt, id_user=id_user, id_car=id_car, dead_line=dead_line, nickname=nickname)
+        except Exception as e:
+            return 500
+
     def loginUser(self, email, jwt_refresh):
         try:
             with self.db.connect() as conn:
