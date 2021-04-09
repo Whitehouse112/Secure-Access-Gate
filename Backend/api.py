@@ -77,11 +77,27 @@ class ActivityAPI(Resource):
         if user is None:
             return 'User not found', 404
 
-        car = carManager.checkCar(user, license_plate, color)
-        if car == 500:
+        id_car = carManager.checkCar(user, license_plate, color)['ID']
+        if id_car == 500:
             return 'Internal server error', 500
-        if car is None:
+        if id_car is None:
             return 'Car not found', 404
+
+        # controllo se la macchina è di un utente temporaneo, 
+        # nel caso non devo eseguire i controlli di anomalie
+        guest = userManager.checkGuest(id_car)
+        if guest == 500:
+            return "Internal server error", 500
+        if guest is not None:
+            #TODO: controllare scadenza dell'autorizzazione
+            date_time = datetime.now()
+            date_time = date_time.strftime("%Y%m%d-%H%M%S")
+            photo_name = f"guests_accesses/{id_gate}/{date_time}"
+            ret = storage.upload_image(photo, photo_name)
+            if ret == 500:
+                return 'Internal server error', 500
+            ret = activityManager.addGuestActivity(user, id_gate, id_car, 'Granted', photo_url+photo_name)
+            return 'Granted', 200
 
         # ottengo la lista di attività dell'utente e controllo le
         # anomalie in termini di incongruenze con data e ora
@@ -120,13 +136,13 @@ class ActivityAPI(Resource):
         
         # carico l'immagine su cloud storage
         date_time = datetime.now()
-        date_time = date_time.strftime("%Y/%m/%g-%H:%M:%S")
+        date_time = date_time.strftime("%Y%m%d-%H%M%S")
         photo_name = f"accesses/{id_gate}/{date_time}"
         ret = storage.upload_image(photo, photo_name)
         if ret == 500:
             return 'Internal server error', 500
             
-        ret = activityManager.addActivity(user, id_gate, car['ID'], outcome, photo_url+photo_name)
+        ret = activityManager.addActivity(user, id_gate, id_car, outcome, photo_url+photo_name)
         if ret == 500:
             return 'Internal server error', 500
         else:

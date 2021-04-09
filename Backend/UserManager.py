@@ -40,6 +40,14 @@ class UserManager:
         except Exception as e:
             return 500
 
+    def checkGuests(self, id_car):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("SELECT * FROM Guests WHERE ID_Car=:id_car")
+                return conn.execute(stmt, id_car=id_car).fetchall()
+        except Exception as e:
+            return 500
+
     def getGuests(self, id_user):
         try:
             with self.db.connect() as conn:

@@ -25,6 +25,16 @@ class ActivityManager():
         except Exception as e:
             return 500
 
+    def addGuestActivity(self, id_user, id_gate, id_car, outcome, photo):
+        now = datetime.now()
+        date_time = now.strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("INSERT INTO Guests_Accesses VALUES (:id_user, :id_gate, :id_car, :date_time, :outcome, :photo)")
+                return conn.execute(stmt, id_user=id_user, id_gate=id_gate, id_car=id_car, date_time=date_time, outcome=outcome, photo=photo)
+        except Exception as e:
+            return 500
+
 class Activity:
     def __init__(self, gateId, licensePlate, color, date):
         self.gateId = gateId

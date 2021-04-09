@@ -59,6 +59,15 @@ create table Guests(
 	Nickname nvarchar(max)
 );
 
+create table Guests_Accesses(
+	ID_User int foreign key references Users(ID) NOT NULL,
+	ID_Gate nvarchar(36) foreign key references Sensors(ID) NOT NULL,
+	ID_Car int foreign key references Cars(ID) NOT NULL,
+	Date_Time datetime DEFAULT current_timestamp,
+	Outcome nvarchar(10) NOT NULL CHECK (Outcome IN('Granted', 'Denied', 'Ignored', 'Pending', 'Reported')),
+	Photo nvarchar(max)
+);
+
 /* Dati inseriti dal produttore che deve essere contattato
 dalle organizzazioni interessate*/
 -- create table Organizations(
