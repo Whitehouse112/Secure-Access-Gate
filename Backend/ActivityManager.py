@@ -17,7 +17,7 @@ class ActivityManager():
 
     def addActivity(self, id_user, id_gate, id_car, outcome, photo):
         now = datetime.now()
-        date_time = now.strftime("%Y/%m/%g %H:%M:%S")
+        date_time = now.strftime("%Y-%m-%d %H:%M:%S")
         try:
             with self.db.connect() as conn:
                 stmt = sqlalchemy.text("INSERT INTO Accesses VALUES (:id_user, :id_gate, :id_car, :date_time, :outcome, :photo)")

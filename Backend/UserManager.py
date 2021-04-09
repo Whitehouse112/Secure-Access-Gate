@@ -58,7 +58,7 @@ class UserManager:
 
     def updateLocation(self, id_user, latitude, longitude):
         now = datetime.now()
-        date_time = now.strftime("%Y/%m/%g %H:%M:%S")
+        date_time = now.strftime("%Y-%m-%d %H:%M:%S")
         try:
             with self.db.connect() as conn:
                 stmt = sqlalchemy.text("INSERT INTO Users_Location VALUES (:id_user, :date_time, :latitude, _longitude)")
