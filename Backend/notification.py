@@ -4,6 +4,7 @@ DEVICE_TOKEN = "cYgzqik3Sdu88GhM6Kz7FO:APA91bFyrSyqmoM0KoTRkZAxaESVfKOPwttewVuIz
 
 class Notification:
     def __init__(self):
+        #TODO: cambiare api_key con una generata nel progetto cloud
         self.push_service = FCMNotification(api_key="AAAAxL7lTsI:APA91bEsVnNzbVM2cZ2rbkl05xSYf7IVMayZpszta2QiCCqgP-8TvtDMzvkQLuQxPJuAlApXRLQQJMsBzH2a7hg9FTboUMNtAmDQktvdjp-_LNk7x7NfzsiE71ETxSd1OknVmlexum3h")
 
     def sendToTopic(self, topic, title, body):
