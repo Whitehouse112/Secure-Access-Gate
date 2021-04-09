@@ -43,5 +43,4 @@ class Activity:
         self.date = date
 
     def __repr__(self):
-        #TODO: complete when you have the definitive form for the access object
         return f'<Gate ID: {self.gateId}>'

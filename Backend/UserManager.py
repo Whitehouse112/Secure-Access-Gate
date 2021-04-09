@@ -114,5 +114,4 @@ class User:
         self.jwt_refresh = jwt_refresh
 
     def __repr__(self):
-        #TODO: complete when you have the definitive form for the user object
         return f'<User:>'

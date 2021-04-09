@@ -49,5 +49,4 @@ class Gate:
         self.photo = photo
 
     def __repr__(self):
-        #TODO: complete when you have the definitive form for the gate object
         return f'<Gate: {self.name}>'
