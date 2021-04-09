@@ -7,8 +7,10 @@ create table Users(
 	ID int identity(1,1) primary key NOT NULL,
 	Email nvarchar(max) NOT NULL,
 	Pwd nvarchar(max) NOT NULL,
+	Nickname nvarchar(max) NOT NULL,
 	Jwt_refresh nvarchar(max),
-	FCM_token nvarchar(max)
+	FCM_token nvarchar(max),
+	Photo nvarchar(max)
 );
 
 create table Cars(
@@ -48,7 +50,7 @@ create table Accesses(
 	ID_Gate nvarchar(36) foreign key references Sensors(ID) NOT NULL,
 	ID_Car int foreign key references Cars(ID) NOT NULL,
 	Date_Time datetime DEFAULT current_timestamp,
-	Outcome nvarchar(10) NOT NULL CHECK (Outcome IN('Granted', 'Denied', 'Ignored', 'Pending', 'Reported')),
+	Outcome nvarchar(10) NOT NULL CHECK (Outcome IN('Granted', 'Denied', 'Pending', 'Reported')),
 	Photo nvarchar(max)
 );
 
@@ -64,7 +66,7 @@ create table Guests_Accesses(
 	ID_Gate nvarchar(36) foreign key references Sensors(ID) NOT NULL,
 	ID_Car int foreign key references Cars(ID) NOT NULL,
 	Date_Time datetime DEFAULT current_timestamp,
-	Outcome nvarchar(10) NOT NULL CHECK (Outcome IN('Granted', 'Denied', 'Ignored', 'Pending', 'Reported')),
+	Outcome nvarchar(10) NOT NULL CHECK (Outcome IN('Granted', 'Denied', 'Pending', 'Reported')),
 	Photo nvarchar(max)
 );
 

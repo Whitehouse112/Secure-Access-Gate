@@ -351,6 +351,18 @@ class UpdateFCM(Resource):
         #TODO: update the database with the current
         return 200
 
+class UserAPI(Resource):
+    @token_required
+    def get(self, current_user):
+        
+        user = userManager.getUser(current_user)
+        if user == 500:
+            return "Internal server error", 500
+        if user is None:
+            return "User not found", 404 
+
+        return jsonify(user)
+
 class SigninUser(Resource):
     def post(self):
         
@@ -386,6 +398,7 @@ class LoginUser(Resource):
             ret = userManager.loginUser(auth.username, jwt_refresh)
             if ret == 500:
                 return 'Internal server error', 500
+            #TODO: valutare se è meglio passare in questo momento le informazioni dell'utente piuttosto che crare una API apposta
             return jsonify({'jwt_token':jwt_refresh, 'jwt_token_expiry':jwt_expiry})
         else:
             return "Invalid username/password supplied", 401
@@ -436,6 +449,7 @@ api.add_resource(OpenGateAPI, f'{basePath}/gate/open')
 api.add_resource(GuestAPI, f'{basePath}/guest')
 api.add_resource(RefreshJWT, f'{basePath}/jwt')
 api.add_resource(UpdateFCM, f'{basePath}/fcm')
+api.add_resource(UserAPI, f'{basePath}/user')
 api.add_resource(SigninUser, f'{basePath}/user/signin')
 api.add_resource(LoginUser, f'{basePath}/user/login')
 api.add_resource(LogoutUser, f'{basePath}/user/logout')
