@@ -24,11 +24,11 @@ class UserManager:
         except Exception as e:
             return 500
 
-    def getUser(self, id):
+    def getUser(self, id_user):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("SELECT * FROM Users WHERE ID=:id")
-                return conn.execute(stmt, id=id).fetchone()
+                stmt = sqlalchemy.text("SELECT * FROM Users WHERE ID=:id_user")
+                return conn.execute(stmt, id_user=id_user).fetchone()
         except Exception as e:
             return 500
 
@@ -72,11 +72,11 @@ class UserManager:
         except Exception as e:
             return 500
 
-    def logoutUser(self, id):
+    def logoutUser(self, id_user):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("UPDATE Users SET Jwt_refresh=NULL where ID=:id")
-                return conn.execute(stmt, id=id)
+                stmt = sqlalchemy.text("UPDATE Users SET Jwt_refresh=NULL where ID=:id_user")
+                return conn.execute(stmt, id_user=id_user)
         except Exception as e:
             return 500
 
@@ -93,8 +93,16 @@ class UserManager:
     def getLocations(self, id_user):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("select top 5 * from Users_Location where ID=:id_user order by Date_Time desc")
+                stmt = sqlalchemy.text("SELECT TOP 5 * FROM Users_Location WHERE ID=:id_user order by Date_Time desc")
                 return conn.execute(stmt, id_user=id_user)
+        except Exception as e:
+            return 500
+
+    def updateFCM(self, id_user, fcm_token):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("UPDATE Users SET FCM_token=:fcm_token where ID=:id_user")
+                return conn.execute(stmt, id_user=id_user, fcm_token= fcm_token)
         except Exception as e:
             return 500
 

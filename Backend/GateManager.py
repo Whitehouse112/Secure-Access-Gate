@@ -9,7 +9,7 @@ class GateManager:
     def checkSensors(self, id_gate):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("SELECT * FROM Sensors where ID=:id_gate")
+                stmt = sqlalchemy.text("SELECT * FROM Sensors WHERE ID=:id_gate")
                 return conn.execute(stmt, id_gate=id_gate).fetchone()
         except Exception as e:
             return 500

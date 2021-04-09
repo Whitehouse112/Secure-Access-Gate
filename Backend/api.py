@@ -96,6 +96,8 @@ class ActivityAPI(Resource):
             ret = storage.upload_image(photo, photo_name)
             if ret == 500:
                 return 'Internal server error', 500
+            
+            #TODO: notificare l'utente sull'ingresso dell'ospite
             ret = activityManager.addGuestActivity(user, id_gate, id_car, 'Granted', photo_url+photo_name)
             return 'Granted', 200
 
@@ -348,8 +350,12 @@ class UpdateFCM(Resource):
         fcm_token = request.get_json['fcm_token']
         if not fcm_token:
             return "Invalid input data", 400
-        #TODO: update the database with the current
-        return 200
+        
+        ret = userManager.updateFCM(current_user, fcm_token)
+        if ret == 500:
+            return 'Internal server error', 500
+        else:
+            return 'Success', 200
 
 class UserAPI(Resource):
     @token_required
