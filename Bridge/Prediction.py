@@ -6,15 +6,9 @@ import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+lang = 'ita'
 
 def prediction(img):
-
-    # Apro il file di configurazione e leggo il parametro [PORTA]
-    filename = f"{dir_path}\\files\\config.txt"
-    file = open(filename, 'r')
-    lang = file.readline().split(',')[1]
-    lang = lang.split('\n')[0]
-    file.close()
 
     img = cv2.resize(img, (600,400) )
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

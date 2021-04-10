@@ -17,4 +17,4 @@ class PubSub():
 
         publisher = pubsub_v1.PublisherClient()
         topic_path = publisher.topic_path(project_id, topic_id)
-        publisher.publish(topic_path, 'OpenGate')
+        publisher.publish(topic_path, uuid)

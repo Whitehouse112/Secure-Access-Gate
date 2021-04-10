@@ -2,55 +2,66 @@ import bridge
 import prediction
 import colorRecognition
 import requests
+import os
 from google.cloud import pubsub_v1
 
-uuid = "d8c0e668-b59e-455e-af78-77470ba291c5"
+project_id='quiet-groove-306310'
 URL = 'http://127.0.0.1:5000/api/v1/activity'
-ser = None
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="files/key.json"
+dev_list = []
 
 def main():
-    
-    attempt = 5
-    ser = bridge.setup()
 
-    project_id='quiet-groove-306310'
-    subscription_name = f'{uuid}-sub'
-    subscriber = pubsub_v1.SubscriberClient()
-    subscription_path = subscriber.subscription_path(project_id, subscription_name)
-    sub_pull = subscriber.subscribe(subscription_path, callback=callback)
-    
+    dev_list = bridge.setup()
+    dev_list = [x for x in dev_list if x[0] is not None]
+
+    tmp = []
+    for ser, uuid in dev_list:
+            subscription_name = f'{uuid}-sub'
+            subscriber = pubsub_v1.SubscriberClient()
+            subscription_path = subscriber.subscription_path(project_id, subscription_name)
+            sub_pull = subscriber.subscribe(subscription_path, callback=callback)
+            tmp.append([ser, uuid, sub_pull])
+    dev_list = tmp
+    print(dev_list)
+
     while (True):
-        
-        try:
-            sub_pull.result()
-        except:
-            sub_pull.cancel()
+        for ser, uuid, sub_pull in dev_list:
 
-        img, bytestream = bridge.loop(ser)
-        if img is not None:
+            try:
+                sub_pull.result(timeout=1)
+            except:
+                sub_pull.cancel()
 
-            plate = prediction.prediction(img)
-            color = colorRecognition.color_recognition(img)
+            ret = bridge.loop(ser, uuid)
+            if ret is not None:
 
-            if plate is None:
-                if attempt > 0:
+                img = ret[0]
+                bytestream = ret[1]
+                
+                plate = prediction.prediction(img)
+                color = colorRecognition.color_recognition(img)
+
+                if plate is None:
                     print("No plate found")
-                    bridge.serialWrite(ser, '0')
+                    bridge.serialWrite(ser, uuid, '0')
                 else:
-                    print("maximum number of attempts reached")
-                attempt -= 1
-            else:
-                print(f"plate found: {plate}")
-                response = requests.post(URL, json={'id_gate':uuid, 'license': plate, 'color': color, 'photo': bytestream})
-                if response.status_code == 200:
-                    print("Open gate")
-                    bridge.serialWrite(ser, '1')
-                else:
-                    print("Waiting for user's input")
-                attempt = 5
+                    print(f"plate found: {plate}")
+                    response = requests.post(URL, json={'id_gate':uuid, 'license': plate, 'color': color, 'photo': bytestream})
+                    if response.status_code == 200:
+                        print("Open gate")
+                        bridge.serialWrite(ser, '1')
+                    else:
+                        print("Waiting for user's input")
 
 def callback(message):
-    bridge.serialWrite(ser, '1')
+    uuid = message
+    ser = None
+    for i in range(len(dev_list)):
+        if dev_list[i][1] == uuid:
+            ser = dev_list[i][0]
+            break
+    bridge.serialWrite(ser, uuid, '1')
     message.ack()
 
 if __name__ == '__main__':

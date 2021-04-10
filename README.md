@@ -33,7 +33,7 @@ In order to let the project work, users must:
     - upload the Arduino.ino file to esp32-cam
     - connect E18-D80NK sensor to esp32-cam (blue=gnd, brown=5V, black=GPIO13)
     - connect lcd 7-segment 5161AS to esp32-cam (https://www.circuitbasics.com/arduino-7-segment-display-tutorial/ - E_segment=GPIO12, G_segment=GPIO2)
-    - start esp32-cam and pair to pc with bluetooth (outgoing COM port must be annotated)
+    - start esp32-cam and pair to pc with bluetooth
     
 + BACKEND
     - Create a database using the file "create_database.sql" into the Backend folder
@@ -41,8 +41,8 @@ In order to let the project work, users must:
 
 + BRIDGE
     - install tesseract (https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-v5.0.0-alpha.20201127.exe)
-    - download the desired tesseract language (https://github.com/tesseract-ocr/tessdata) and put the .traineddata file into /Tesseract-OCR/tessdata installation folder
-    - create a config.txt file in the root/Bridge/files project's folder (usage: "outgoing COM port, language". Es: "COM5,ita")
+    - download the desired tesseract language (https://github.com/tesseract-ocr/tessdata) and put the .traineddata file into /Tesseract-OCR/tessdata installation folder (modify the "lang" variables in prediction.py to use it)
+    - create a config.txt file in the root/Bridge/files project's folder (usage: "uuid4\n")
 
 ## Directories structure
 + root/

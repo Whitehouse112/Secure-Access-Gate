@@ -14,7 +14,6 @@ def color_recognition(img):
 
     activations = model.predict(img)
     d_b = {0: 'black', 1:'blue', 2:'cyan', 3:'gray', 4:'green', 5:'red', 6:'white', 7:'yellow'}
-    print("class:", d_b[np.argmax(activations)])
-    print(activations)
+    print("color:", d_b[np.argmax(activations)])
 
     return d_b[np.argmax(activations)]
