@@ -10,6 +10,7 @@ from gateManager import GateManager
 from userManager import UserManager
 from pubsub import PubSub
 from storage import Storage
+from notification import Notification
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import pubsub
@@ -29,6 +30,7 @@ gateManager = GateManager()
 userManager = UserManager()
 storage = Storage()
 pubsub = PubSub()
+notification = Notification()
 
 STATUS = ['granted', 'denied', 'ignored', 'pending', 'reported']
 COLOR = ['Black', 'Blue', 'Green', 'Gray', 'Red', 'White', 'Yellow', 'Cyan']
@@ -83,6 +85,20 @@ class ActivityAPI(Resource):
         if id_car is None:
             return 'Car not found', 404
 
+        gate = gateManager.checkGate(user, id_gate)['Location']
+        if gate == 500:
+            return 'Internal server error', 500
+        if gate is None:
+            return "Gate not found", 404
+        current_location = gate['Location']
+        gate_name = gate['Name']
+
+        token = userManager.getUser(user)['FCM_token']
+        if token == 500:
+            return 'Internal server error', 500
+        if token is None:
+            return 'Token not found', 404
+
         # controllo se la macchina è di un utente temporaneo, 
         # nel caso non devo eseguire i controlli di anomalie
         guest = userManager.checkGuest(id_car)
@@ -97,7 +113,12 @@ class ActivityAPI(Resource):
             if ret == 500:
                 return 'Internal server error', 500
             
-            #TODO: notificare l'utente sull'ingresso dell'ospite
+            # Notifico l'utente sull'accesso da parte dell'ospite
+            title = "Nuovo accesso rilevato"
+            body = f"L'utente {guest['Nickname']} ha effettuato l'accesso al cancello '{gate_name}'"
+            data = {"id_gate":id_gate}
+            notification.sendToDevice(token, title, body, data)
+            
             ret = activityManager.addGuestActivity(user, id_gate, id_car, 'Granted', photo_url+photo_name)
             return 'Granted', 200
 
@@ -115,6 +136,8 @@ class ActivityAPI(Resource):
             # ottengo la lista delle ultime posizioni dell'utente e controllo le
             # anomalie in termini di incongruenze con l'attuale posizione
             current_location = gateManager.checkGate(user, id_gate)['Location']
+            if current_location == 500:
+                return 'Internal server error', 500
             if current_location is None:
                 return "Gate not found", 404
             locations = userManager.getLocations(user)
@@ -127,15 +150,6 @@ class ActivityAPI(Resource):
         else:
             location_anomaly = 0
 
-        # controllo se sono state rilevate o meno delle anomalie
-        if time_anomaly >= 1 or location_anomaly == 1:
-            outcome = 'Pending'
-            ret_code = 202
-            #TODO: notificare l'utente a seguito della richiesta di Pending
-        else:
-            outcome = 'Granted'
-            ret_code = 200
-        
         # carico l'immagine su cloud storage
         date_time = datetime.now()
         date_time = date_time.strftime("%Y%m%d-%H%M%S")
@@ -143,42 +157,58 @@ class ActivityAPI(Resource):
         ret = storage.upload_image(photo, photo_name)
         if ret == 500:
             return 'Internal server error', 500
+
+        # controllo se sono state rilevate o meno delle anomalie
+        if time_anomaly >= 1 or location_anomaly == 1:
+            outcome = 'Pending'
+            ret_code = 202
             
+            # Notifico l'utente sullo stato dell'accesso in 'Pending'
+            title = "Nuovo accesso rilevato"
+            body = f"Tentativo di accesso al cancello '{gate_name}': autorizzare l'accesso?"
+            data = {"id_gate":id_gate}
+            notification.sendToDevice(token, title, body, data)
+        else:
+            outcome = 'Granted'
+            ret_code = 200
+           
         ret = activityManager.addActivity(user, id_gate, id_car, outcome, photo_url+photo_name)
         if ret == 500:
             return 'Internal server error', 500
         else:
             return outcome, ret_code
         
-    # @token_required
-    # def put(self, current_user):
+    @token_required
+    def put(self, current_user):
         
-    #     activityId = request.get_json()['activityId']
-    #     userId = request.get_json()['userId']
-    #     status = request.get_json()['status']
+        id_gate = request.get_json()['id_gate']
+        outcome = request.get_json()['outcome']
+        status = 'Pending'
 
-    #     if activity.checkActivity(userId, activityId):
-    #         return "No Activity found", 404
+        last_activity = activityManager.getLastActivity(current_user, id_gate, status)
+        if last_activity == 500:
+            return 'Internal server error', 500
+        if last_activity is None:
+            return'No activity found', 404
 
-    #     if status not in STATUS:
-    #         return "Invalid input data", 400
+        ret = activityManager.updateActivity(current_user, id_gate, last_activity['Date_Time'], status, outcome)
+        if ret == 500:
+            return "Internal server error", 500
+        else:
+            return "Success", 200
 
-    #     if activity.updateActivity(userId, activityId, status):
-    #         return "Internal server error", 500
-    #     else:
-    #         return "Success", 200
-
-    # @token_required
-    # def get(current_user, self):
+    @token_required
+    def get(self, current_user):
         
-    #     if not userManager.checkUser(current_user):
-    #         return "Invalid input data", 400
+        activities = activityManager.getActivities(current_user)
+        if activities == 500:
+            return 'Internal server error', 500
+        
+        guests_activities = activityManager.getGuestsActivities(current_user)
+        if guests_activities == 500:
+            return 'Internal server error', 500
 
-    #     ret = activity.getActivity(current_user)
-    #     if ret != []:
-    #         return ret, 200
-    #     else:
-    #         return "No Gate found", 404
+        return jsonify(activities, guests_activities), 200
 
 class CarAPI(Resource):
     @token_required
@@ -201,6 +231,19 @@ class CarAPI(Resource):
             return "Car already exists", 409
 
         ret = carManager.addCar(current_user, license_plate, color, brand)
+        if ret == 500:
+            return 'Internal server error', 500
+        else:
+            return 'Success', 200
+
+class UpdateFCM(Resource):
+    @token_required
+    def post(self, current_user):
+        fcm_token = request.get_json['fcm_token']
+        if not fcm_token:
+            return "Invalid input data", 400
+        
+        ret = userManager.updateFCM(current_user, fcm_token)
         if ret == 500:
             return 'Internal server error', 500
         else:
@@ -344,18 +387,22 @@ class RefreshJWT(Resource):
         jwt_expiry = jwt.encode({'user':current_user, 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
         return jsonify({'jwt_token_expiry':jwt_expiry})
 
-class UpdateFCM(Resource):
+class NotificationAPI(Resource):
     @token_required
     def post(self, current_user):
-        fcm_token = request.get_json['fcm_token']
-        if not fcm_token:
+
+        location = request.get_json()['Location']
+        if location is None:
             return "Invalid input data", 400
         
-        ret = userManager.updateFCM(current_user, fcm_token)
-        if ret == 500:
-            return 'Internal server error', 500
-        else:
-            return 'Success', 200
+        location = location.replace(" ", "")
+        location = location.split(',')
+        topic = location[0] + "-" + location[2]
+        title = "Segnalazione"
+        body = f"Segnalazione utente sospetto nel quartiere {topic}"
+        #TODO: controllare differenze pubSub vs notification, 
+        # eventualmente integrare le due classi in un unico file
+        notification.sendToTopic(topic, title, body)
 
 class UserAPI(Resource):
     @token_required
@@ -450,11 +497,12 @@ class UpdateLocation(Resource):
             
 api.add_resource(ActivityAPI, f'{basePath}/activity')
 api.add_resource(CarAPI, f'{basePath}/car')
+api.add_resource(UpdateFCM, f'{basePath}/fcm')
 api.add_resource(GateAPI, f'{basePath}/gate')
 api.add_resource(OpenGateAPI, f'{basePath}/gate/open')
 api.add_resource(GuestAPI, f'{basePath}/guest')
 api.add_resource(RefreshJWT, f'{basePath}/jwt')
-api.add_resource(UpdateFCM, f'{basePath}/fcm')
+api.add_resource(NotificationAPI, f'{basePath}/notification')
 api.add_resource(UserAPI, f'{basePath}/user')
 api.add_resource(SigninUser, f'{basePath}/user/signin')
 api.add_resource(LoginUser, f'{basePath}/user/login')

@@ -67,7 +67,7 @@ class UserManager:
     def loginUser(self, email, jwt_refresh):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("UPDATE Users SET Jwt_refresh=:jwt_refresh where Email=:email")
+                stmt = sqlalchemy.text("UPDATE Users SET Jwt_refresh=:jwt_refresh WHERE Email=:email")
                 return conn.execute(stmt, jwt_refresh=jwt_refresh, email=email)
         except Exception as e:
             return 500
@@ -75,7 +75,7 @@ class UserManager:
     def logoutUser(self, id_user):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("UPDATE Users SET Jwt_refresh=NULL where ID=:id_user")
+                stmt = sqlalchemy.text("UPDATE Users SET Jwt_refresh=NULL WHERE ID=:id_user")
                 return conn.execute(stmt, id_user=id_user)
         except Exception as e:
             return 500

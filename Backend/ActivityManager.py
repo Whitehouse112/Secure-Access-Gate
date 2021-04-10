@@ -7,11 +7,19 @@ class ActivityManager():
     def __init__(self):
         self.db = database.create_connection()
 
-    def getActivities(self, id_user, id_gate):
+    def getLastActivity(self, id_user, id_gate, status):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("SELECT * FROM Accesses WHERE ID_User=:id_user and ID_Gate=:id_gate")
-                return conn.execute(stmt, id_user=id_user, id_gate=id_gate).fetchall()
+                stmt = sqlalchemy.text("SELECT * FROM Accesses WHERE ID_User=:id_user and ID_Gate=:id_gate and Outcome=:outcome order by Date_Time DESC")
+                return conn.execute(stmt, id_user=id_user, id_gate=id_gate, outcome=status).fetchone()
+        except Exception as e:
+            return 500
+
+    def getActivities(self, id_user):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("SELECT * FROM Accesses WHERE ID_User=:id_user")
+                return conn.execute(stmt, id_user=id_user).fetchall()
         except Exception as e:
             return 500
 
@@ -25,6 +33,14 @@ class ActivityManager():
         except Exception as e:
             return 500
 
+    def getGuestsActivities(self, id_user):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("SELECT * FROM Guests_Accesses WHERE ID_User=:id_user")
+                return conn.execute(stmt, id_user=id_user).fetchall()
+        except Exception as e:
+            return 500
+
     def addGuestActivity(self, id_user, id_gate, id_car, outcome, photo):
         now = datetime.now()
         date_time = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -32,6 +48,14 @@ class ActivityManager():
             with self.db.connect() as conn:
                 stmt = sqlalchemy.text("INSERT INTO Guests_Accesses VALUES (:id_user, :id_gate, :id_car, :date_time, :outcome, :photo)")
                 return conn.execute(stmt, id_user=id_user, id_gate=id_gate, id_car=id_car, date_time=date_time, outcome=outcome, photo=photo)
+        except Exception as e:
+            return 500
+
+    def updateActivity(self, id_user, id_gate, date_time, status, outcome):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("UPDATE Accesses SET Outcome=:outcome WHERE ID_User=:id_user and ID_Gate=:id_gate and Date_Time=:date_time and Outcome=:status")
+                return conn.execute(stmt, id_user=id_user, id_gate=id_gate, date_time=date_time, status=status, outcome=outcome)
         except Exception as e:
             return 500
 
