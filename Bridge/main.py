@@ -7,11 +7,17 @@ from google.cloud import pubsub_v1
 
 project_id='quiet-groove-306310'
 URL = 'http://127.0.0.1:5000/api/v1/activity'
+#TODO: eliminare la chiave prima di caricare su cloud
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="files/key.json"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+model_path = f"{dir_path}\\files\\vehicle_color_haze_free_model.h5"
 dev_list = []
 
 def main():
 
+    global dev_list
+
+    model = colorRecognition.load(model_path)
     dev_list = bridge.setup()
     dev_list = [x for x in dev_list if x[0] is not None]
 
@@ -25,13 +31,12 @@ def main():
     dev_list = tmp
     print(dev_list)
 
-    while (True):
+    while(True):
         for ser, uuid, sub_pull in dev_list:
-
             try:
                 sub_pull.result(timeout=1)
             except:
-                sub_pull.cancel()
+                pass
 
             ret = bridge.loop(ser, uuid)
             if ret is not None:
@@ -40,7 +45,7 @@ def main():
                 bytestream = ret[1]
                 
                 plate = prediction.prediction(img)
-                color = colorRecognition.color_recognition(img)
+                color = colorRecognition.color_recognition(img, model)
 
                 if plate is None:
                     print("No plate found")
@@ -55,13 +60,15 @@ def main():
                         print("Waiting for user's input")
 
 def callback(message):
-    uuid = message
+    uuid = message.data.decode('utf-8')
     ser = None
     for i in range(len(dev_list)):
         if dev_list[i][1] == uuid:
             ser = dev_list[i][0]
             break
-    bridge.serialWrite(ser, uuid, '1')
+    print(f"recieved message: {uuid}, {ser}")
+    if ser is not None:
+        bridge.serialWrite(ser, uuid, '1')
     message.ack()
 
 if __name__ == '__main__':

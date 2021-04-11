@@ -3,12 +3,11 @@ import numpy as np
 import cv2
 import os
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+def load(path_file):
+    return load_model(path_file)
 
-def color_recognition(img):
+def color_recognition(img, model):
    
-    model = load_model(f"{dir_path}\\files\\vehicle_color_haze_free_model.h5")
-
     img = cv2.resize(img, dsize=(100, 100), interpolation=cv2.INTER_CUBIC)
     img = np.expand_dims(img, axis=0)
 
