@@ -208,7 +208,7 @@ class ActivityAPI(Resource):
         if guests_activities == 500:
             return 'Internal server error', 500
 
-        return jsonify(activities, guests_activities), 200
+        return jsonify({'activities':activities, 'guests_activities': guests_activities}), 200
 
 class CarAPI(Resource):
     @token_required
@@ -260,6 +260,8 @@ class GateAPI(Resource):
         longitude = request.get_json()['longitude']
         photo = request.get_json()['photo']
 
+        url_image = ""
+
         if id_gate is None:
             return "Invalid input data", 400
         if gateManager.checkSensors(id_gate) is None:
@@ -279,13 +281,14 @@ class GateAPI(Resource):
         if gate is not None:
             return 'Gate already exists', 409
 
-        if photo is not None:
+        if photo != 'null':
             # se presente, carico l'immagine su cloud storage
             photo_name = f"gates/{current_user}/{id_gate}"
             ret = storage.upload_image(photo, photo_name)
             if ret == 500:
                 return 'Internal server error', 500
             ret = gateManager.addGate(current_user, id_gate, name, location, latitude, longitude, photo_url+photo_name)
+            url_image = photo_url + photo_name
         else:
             ret = gateManager.addGate(current_user, id_gate, name, location, latitude, longitude, None)
         
@@ -293,7 +296,10 @@ class GateAPI(Resource):
             return 'Internal server error', 500
         else:
             pubsub.createTopic(id_gate)
-            return 'Success', 200
+            if url_image != "":
+               return jsonify({'url_image': url_image}), 200
+            else: 
+                return 'Success', 200
 
     @token_required
     def get(self, current_user):
@@ -304,7 +310,7 @@ class GateAPI(Resource):
         if gates is None:
             return "No Gate found", 404
 
-        return jsonify(gates)
+        return jsonify({'gates': gates})
 
 class OpenGateAPI(Resource):
     @token_required
@@ -363,7 +369,7 @@ class GuestAPI(Resource):
         if guests is None:
             return "No Guests found", 404
         
-        return jsonify(guests)
+        return jsonify({'guests':guests})
 
 class RefreshJWT(Resource):
     def post(self):
@@ -411,10 +417,10 @@ class UserAPI(Resource):
         user = userManager.getUser(current_user)
         if user == 500:
             return "Internal server error", 500
-        if user is None:
+        if user == []:
             return "User not found", 404 
 
-        return jsonify(user)
+        return jsonify({'user': user})
 
 class SigninUser(Resource):
     def post(self):

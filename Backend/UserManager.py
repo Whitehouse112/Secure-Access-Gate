@@ -56,7 +56,7 @@ class UserManager:
         except Exception as e:
             return 500
 
-    def addguest(self, id_user, id_car, dead_line, nickname):
+    def addGuest(self, id_user, id_car, dead_line, nickname):
         try:
             with self.db.connect() as conn:
                 stmt = sqlalchemy.text("INSERT INTO Guests VALUES (:id_user, :id_car, :dead_line, :nickname)")

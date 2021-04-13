@@ -26,7 +26,17 @@ class GateManager:
         try:
             with self.db.connect() as conn:
                 stmt = sqlalchemy.text("SELECT * FROM Gates WHERE ID_User=:id_user")
-                return conn.execute(stmt, id_user=id_user).fetchall()
+                gates = conn.execute(stmt, id_user=id_user).fetchall()
+                ret = []
+                for gate in gates:
+                    gate_info = {}
+                    for field in gate.__getattribute__('_fields'):
+                        if field == 'Latitude' or field == 'Longitude':
+                            continue
+                        data = gate.__getattribute__(field)
+                        gate_info[field] = data
+                    ret.append(gate_info)
+                return ret
         except Exception as e:
             return 500
 
