@@ -19,7 +19,17 @@ class ActivityManager():
         try:
             with self.db.connect() as conn:
                 stmt = sqlalchemy.text("SELECT * FROM Accesses WHERE ID_User=:id_user")
-                return conn.execute(stmt, id_user=id_user).fetchall()
+                activities = conn.execute(stmt, id_user=id_user).fetchall()
+                ret = []
+                for activity in activities:
+                    activity_info = {}
+                    for field in activity.__getattribute__('_fields'):
+                        data = activity.__getattribute__(field)
+                        if field == 'Date_Time':
+                            data = data.strftime("%Y-%m-%d %H:%M:%S")
+                        activity_info[field] = data
+                    ret.append(activity_info)
+                return ret
         except Exception as e:
             return 500
 
@@ -37,7 +47,17 @@ class ActivityManager():
         try:
             with self.db.connect() as conn:
                 stmt = sqlalchemy.text("SELECT * FROM Guests_Accesses WHERE ID_User=:id_user")
-                return conn.execute(stmt, id_user=id_user).fetchall()
+                activities = conn.execute(stmt, id_user=id_user).fetchall()
+                ret = []
+                for activity in activities:
+                    activity_info = {}
+                    for field in activity.__getattribute__('_fields'):
+                        data = activity.__getattribute__(field)
+                        if field == 'Date_Time':
+                            data = data.strftime("%Y-%m-%d %H:%M:%S")
+                        activity_info[field] = data
+                    ret.append(activity_info)
+                return ret
         except Exception as e:
             return 500
 

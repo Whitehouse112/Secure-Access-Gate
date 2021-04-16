@@ -85,7 +85,7 @@ class UserManager:
         date_time = now.strftime("%Y-%m-%d %H:%M:%S")
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("INSERT INTO Users_Location VALUES (:id_user, :date_time, :latitude, _longitude)")
+                stmt = sqlalchemy.text("INSERT INTO Users_Location VALUES (:id_user, :date_time, :latitude, :longitude)")
                 return conn.execute(stmt, id_user=id_user, date_time=date_time, latitude=latitude, longitude=longitude)
         except Exception as e:
             return 500

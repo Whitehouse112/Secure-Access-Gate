@@ -32,7 +32,7 @@ storage = Storage()
 pubsub = PubSub()
 notification = Notification()
 
-STATUS = ['granted', 'denied', 'ignored', 'pending', 'reported']
+STATUS = ['Granted', 'Denied', 'Ignored', 'Pending', 'Reported']
 COLOR = ['Black', 'Blue', 'Green', 'Gray', 'Red', 'White', 'Yellow', 'Cyan']
 
 def token_required(f):
@@ -99,16 +99,17 @@ class ActivityAPI(Resource):
         if token is None:
             return 'Token not found', 404
 
+        date_time = datetime.now()
+        date_time = date_time.strftime("%Y%m%d-%H%M%S")
+        photo_name = f"guests_accesses/{id_gate}/{date_time}"
+
         # controllo se la macchina è di un utente temporaneo, 
         # nel caso non devo eseguire i controlli di anomalie
         guest = userManager.checkGuest(id_car)
         if guest == 500:
             return "Internal server error", 500
         if guest is not None:
-            #TODO: controllare scadenza dell'autorizzazione
-            date_time = datetime.now()
-            date_time = date_time.strftime("%Y%m%d-%H%M%S")
-            photo_name = f"guests_accesses/{id_gate}/{date_time}"
+            #TODO: controllare validità della scadenza dell'autorizzazione
             ret = storage.upload_image(photo, photo_name)
             if ret == 500:
                 return 'Internal server error', 500
@@ -151,9 +152,6 @@ class ActivityAPI(Resource):
             location_anomaly = 0
 
         # carico l'immagine su cloud storage
-        date_time = datetime.now()
-        date_time = date_time.strftime("%Y%m%d-%H%M%S")
-        photo_name = f"accesses/{id_gate}/{date_time}"
         ret = storage.upload_image(photo, photo_name)
         if ret == 500:
             return 'Internal server error', 500
@@ -180,7 +178,9 @@ class ActivityAPI(Resource):
         
     @token_required
     def put(self, current_user):
-        
+        #TODO:  Granted -> aprire cancello (pub/sub)
+        #       Ignored -> nulla
+        #       Reported -> notificare utenti (notification: [Via Ippolito Nievo, 112, 41124 Modena MO, Italy])
         id_gate = request.get_json()['id_gate']
         outcome = request.get_json()['outcome']
         status = 'Pending'
@@ -208,7 +208,7 @@ class ActivityAPI(Resource):
         if guests_activities == 500:
             return 'Internal server error', 500
 
-        return jsonify({'activities':activities, 'guests_activities': guests_activities}), 200
+        return {'activities':activities, 'guests_activities': guests_activities}, 200
 
 class CarAPI(Resource):
     @token_required
@@ -284,6 +284,7 @@ class GateAPI(Resource):
         if photo != 'null':
             # se presente, carico l'immagine su cloud storage
             photo_name = f"gates/{current_user}/{id_gate}"
+            photo = bytes.fromhex(photo)
             ret = storage.upload_image(photo, photo_name)
             if ret == 500:
                 return 'Internal server error', 500
@@ -310,7 +311,7 @@ class GateAPI(Resource):
         if gates is None:
             return "No Gate found", 404
 
-        return jsonify({'gates': gates})
+        return {'gates': gates}, 200
 
 class OpenGateAPI(Resource):
     @token_required
@@ -322,7 +323,7 @@ class OpenGateAPI(Resource):
         if gateManager.checkSensors(id_gate) is None:
             return "Invalid input data", 400
 
-        pubsub.publishTopic(id_gate)
+        pubsub.publishTopic(bytes(id_gate, 'utf-8'))
         return "Success", 200
 
 class GuestAPI(Resource):
@@ -330,7 +331,6 @@ class GuestAPI(Resource):
     def post(self, current_user):
 
         nickname = request.get_json()['nickname']
-        #TODO: controllare formati date_time
         dead_line = request.get_json()['dead_line']
         license_plate = request.get_json()['license']
         color = request.get_json()['color']
@@ -406,8 +406,6 @@ class NotificationAPI(Resource):
         topic = location[0] + "-" + location[2]
         title = "Segnalazione"
         body = f"Segnalazione utente sospetto nel quartiere {topic}"
-        #TODO: controllare differenze pubSub vs notification, 
-        # eventualmente integrare le due classi in un unico file
         notification.sendToTopic(topic, title, body)
 
 class UserAPI(Resource):
@@ -457,7 +455,6 @@ class LoginUser(Resource):
             ret = userManager.loginUser(auth.username, jwt_refresh)
             if ret == 500:
                 return 'Internal server error', 500
-            #TODO: valutare se è meglio passare in questo momento le informazioni dell'utente piuttosto che crare una API apposta
             return jsonify({'jwt_token':jwt_refresh, 'jwt_token_expiry':jwt_expiry})
         else:
             return "Invalid username/password supplied", 401
@@ -482,6 +479,7 @@ class UpdateLocation(Resource):
     @token_required
     def post(self, current_user):
 
+        altitude = request.get_json()['altitude']
         latitude = request.get_json()['latitude']
         longitude = request.get_json()['longitude']
         if latitude is None:
@@ -495,7 +493,7 @@ class UpdateLocation(Resource):
         if user is None:
             return "User not found", 404 
 
-        ret = userManager.updateLocation(current_user, latitude, longitude)
+        ret = userManager.updateLocation(current_user, float(latitude), float(longitude))
         if ret == 500:
             return "Internal server error", 500
         else:
