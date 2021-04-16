@@ -52,7 +52,17 @@ class UserManager:
         try:
             with self.db.connect() as conn:
                 stmt = sqlalchemy.text("SELECT * FROM Guests WHERE ID_Administrator=:id_user")
-                return conn.execute(stmt, id_user=id_user).fetchall()
+                guests = conn.execute(stmt, id_user=id_user).fetchall()
+                ret = []
+                for guest in guests:
+                    guest_info = {}
+                    for field in guest.__getattribute__('_fields'):
+                        data = guest.__getattribute__(field)
+                        if field == 'Date_Time':
+                            data = data.strftime("%Y-%m-%d %H:%M:%S")
+                        guest_info[field] = data
+                    ret.append(guest_info)
+                return ret
         except Exception as e:
             return 500
 

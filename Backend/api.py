@@ -1,5 +1,4 @@
 import jwt
-import datetime
 import os
 from flask import Flask, request, jsonify
 from flask_restful import Resource, Api
@@ -13,6 +12,7 @@ from storage import Storage
 from notification import Notification
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 import pubsub
 
 app = Flask(__name__)
@@ -103,13 +103,21 @@ class ActivityAPI(Resource):
         date_time = date_time.strftime("%Y%m%d-%H%M%S")
         photo_name = f"guests_accesses/{id_gate}/{date_time}"
 
-        # controllo se la macchina è di un utente temporaneo, 
+        # Controllo se la macchina è di un utente temporaneo, 
         # nel caso non devo eseguire i controlli di anomalie
         guest = userManager.checkGuest(id_car)
         if guest == 500:
             return "Internal server error", 500
         if guest is not None:
-            #TODO: controllare validità della scadenza dell'autorizzazione
+            # Controllo la validità della scadenza dell'autorizzazione
+            current_datetime = datetime.strptime(date_time, '%Y%m%d-%H%M%S')
+            deadline = guest['Date_Time']
+            if deadline < current_datetime:
+                #TODO: ritornare solo il messaggio di errore o notificare l'utente
+                # per autorizzare eventualmente l'ospite?
+                return "Deadline date has expired", 401
+
+            # Carico la foto sul cloud
             ret = storage.upload_image(photo, photo_name)
             if ret == 500:
                 return 'Internal server error', 500
@@ -123,7 +131,7 @@ class ActivityAPI(Resource):
             ret = activityManager.addGuestActivity(user, id_gate, id_car, 'Granted', photo_url+photo_name)
             return 'Granted', 200
 
-        # ottengo la lista di attività dell'utente e controllo le
+        # Ottengo la lista di attività dell'utente e controllo le
         # anomalie in termini di incongruenze con data e ora
         activities = activityManager.getActivities(user, id_gate)
         if activities == 500:
@@ -134,7 +142,7 @@ class ActivityAPI(Resource):
             time_anomaly = anomalyDetection.detect_dateTime(activities)
 
         if time_anomaly == 0:
-            # ottengo la lista delle ultime posizioni dell'utente e controllo le
+            # Ottengo la lista delle ultime posizioni dell'utente e controllo le
             # anomalie in termini di incongruenze con l'attuale posizione
             current_location = gateManager.checkGate(user, id_gate)['Location']
             if current_location == 500:
@@ -151,12 +159,12 @@ class ActivityAPI(Resource):
         else:
             location_anomaly = 0
 
-        # carico l'immagine su cloud storage
+        # Carico l'immagine su cloud storage
         ret = storage.upload_image(photo, photo_name)
         if ret == 500:
             return 'Internal server error', 500
 
-        # controllo se sono state rilevate o meno delle anomalie
+        # Controllo se sono state rilevate o meno delle anomalie
         if time_anomaly >= 1 or location_anomaly == 1:
             outcome = 'Pending'
             ret_code = 202
@@ -178,9 +186,7 @@ class ActivityAPI(Resource):
         
     @token_required
     def put(self, current_user):
-        #TODO:  Granted -> aprire cancello (pub/sub)
-        #       Ignored -> nulla
-        #       Reported -> notificare utenti (notification: [Via Ippolito Nievo, 112, 41124 Modena MO, Italy])
+
         id_gate = request.get_json()['id_gate']
         outcome = request.get_json()['outcome']
         status = 'Pending'
@@ -194,8 +200,25 @@ class ActivityAPI(Resource):
         ret = activityManager.updateActivity(current_user, id_gate, last_activity['Date_Time'], status, outcome)
         if ret == 500:
             return "Internal server error", 500
-        else:
-            return "Success", 200
+        
+        if outcome == 'Granted':
+            pubsub.publishTopic(bytes(id_gate, 'utf-8'))
+        if outcome == 'Reported':
+            gate = gateManager.checkGate(current_user, id_gate)
+            if gate == 500:
+                return "Internal server error", 500
+            if gate is None:
+                return "Invalid input data", 400
+
+            # ex: [Via Ippolito Nievo, 112, 41124 Modena MO, Italy]
+            location = gate['Locartion']
+            location = location.split(",")
+            cap = location[2].split(" ")[0]
+            topic = f"{location[0]} {cap}"
+            title = "Allerta vicinato"
+            body = f"Segnalazione sospetta in {location[0]}"
+            notification.sendToTopic(topic, title, body)
+        return "Success", 200
 
     @token_required
     def get(self, current_user):
@@ -282,7 +305,7 @@ class GateAPI(Resource):
             return 'Gate already exists', 409
 
         if photo != 'null':
-            # se presente, carico l'immagine su cloud storage
+            # Se presente, carico l'immagine su cloud storage
             photo_name = f"gates/{current_user}/{id_gate}"
             photo = bytes.fromhex(photo)
             ret = storage.upload_image(photo, photo_name)
@@ -369,7 +392,7 @@ class GuestAPI(Resource):
         if guests is None:
             return "No Guests found", 404
         
-        return jsonify({'guests':guests})
+        return {'guests':guests}, 200
 
 class RefreshJWT(Resource):
     def post(self):

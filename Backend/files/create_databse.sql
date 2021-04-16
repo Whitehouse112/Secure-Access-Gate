@@ -69,23 +69,3 @@ create table Guests_Accesses(
 	Outcome nvarchar(10) NOT NULL CHECK (Outcome IN('Granted', 'Denied', 'Pending', 'Reported')),
 	Photo nvarchar(max)
 );
-
-/* Dati inseriti dal produttore che deve essere contattato
-dalle organizzazioni interessate*/
--- create table Organizations(
--- 	/*UUID4*/
--- 	ID nvarchar(36) primary key NOT NULL,
--- 	Organization_Name nvarchar(450) NOT NULL UNIQUE,
--- );
-
--- create table Administrator(
--- 	ID_User int foreign key references Users(ID) NOT NULL,
--- 	ID_Organization nvarchar(36) default NULL foreign key references Organizations(ID),
--- 	CONSTRAINT PK_Administrator primary key(ID_User, ID_Organization)
--- );
-
--- create table Organization_Users(
--- 	ID_User int foreign key references Users(ID) NOT NULL,
--- 	ID_Organization nvarchar(36) foreign key references Organizations(ID) NOT NULL,
--- 	CONSTRAINT PK_Organization_User primary key(ID_User, ID_Organization)
--- );
