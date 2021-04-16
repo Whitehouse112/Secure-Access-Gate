@@ -39,7 +39,7 @@ class AnomalyDetection():
         times = [x['Date_Time'] for x in locations_list]
 
         gate_distance = distance.distance(current_location, locations[0]).kilometers
-        if gate_distance < 0.5:
+        if gate_distance > 0.5:
             return 1
 
         tmp = 0
