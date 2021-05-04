@@ -14,6 +14,22 @@ class CarManager:
         except Exception as e:
             return 500
 
+    def getCars(self, id_user):
+        try:
+            with self.db.connect() as conn:
+                stmt = sqlalchemy.text("SELECT * FROM Cars WHERE ID_User =:id_user")
+                cars = conn.execute(stmt, id_user=id_user).fetchall()
+                ret = []
+                for car in cars:
+                    car_info = {}
+                    for field in car.__getattribute__('_fields'):
+                        data = car.__getattribute__(field)
+                        car_info[field] = data
+                    ret.append(car_info)
+                return ret
+        except Exception as e:
+            return 500
+
     def addCar(self, id_user, license_plate, color, brand):
         try:
             with self.db.connect() as conn:

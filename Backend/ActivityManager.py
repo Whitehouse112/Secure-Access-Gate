@@ -18,7 +18,8 @@ class ActivityManager():
     def getActivities(self, id_user):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("SELECT * FROM Accesses WHERE ID_User=:id_user")
+                stmt = sqlalchemy.text("select A.ID_User, A.ID_Gate, C.Plate as ID_Car, A.Date_Time, A.Outcome, A.Photo" + 
+                                        " from Accesses as A, Cars as C where A.ID_User=:id_user and A.ID_Car=C.ID")
                 activities = conn.execute(stmt, id_user=id_user).fetchall()
                 ret = []
                 for activity in activities:
@@ -46,7 +47,8 @@ class ActivityManager():
     def getGuestsActivities(self, id_user):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("SELECT * FROM Guests_Accesses WHERE ID_User=:id_user")
+                stmt = sqlalchemy.text("select A.ID_User, A.ID_Gate, C.Plate as ID_Car, A.Date_Time, A.Outcome, A.Photo" + 
+                                        " from Guests_Accesses as A, Cars as C where A.ID_User=:id_user and A.ID_Car=C.ID")
                 activities = conn.execute(stmt, id_user=id_user).fetchall()
                 ret = []
                 for activity in activities:

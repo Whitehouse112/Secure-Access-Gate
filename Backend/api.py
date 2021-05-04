@@ -272,6 +272,14 @@ class UpdateFCM(Resource):
         else:
             return 'Success', 200
 
+    def get(self, current_user):
+        
+        cars = carManager.getCars(current_user)
+        if cars == 500:
+            return 'Internal server error', 500
+
+        return {'cars':cars}, 200
+
 class GateAPI(Resource):
     @token_required
     def post(self, current_user):
