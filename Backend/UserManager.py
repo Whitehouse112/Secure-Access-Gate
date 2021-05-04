@@ -28,7 +28,12 @@ class UserManager:
         try:
             with self.db.connect() as conn:
                 stmt = sqlalchemy.text("SELECT * FROM Users WHERE ID=:id_user")
-                return conn.execute(stmt, id_user=id_user).fetchone()
+                user = conn.execute(stmt, id_user=id_user).fetchone()
+                ret = {}
+                for field in user.__getattribute__('_fields'):
+                    data = user.__getattribute__(field)
+                    ret[field] = data
+                return ret
         except Exception as e:
             return 500
 

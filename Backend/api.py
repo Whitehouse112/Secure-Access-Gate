@@ -12,7 +12,7 @@ from storage import Storage
 from notification import Notification
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+import datetime
 import pubsub
 
 app = Flask(__name__)
@@ -346,7 +346,7 @@ class OpenGateAPI(Resource):
         if gateManager.checkSensors(id_gate) is None:
             return "Invalid input data", 400
 
-        pubsub.publishTopic(bytes(id_gate, 'utf-8'))
+        pubsub.publishTopic(id_gate)
         return "Success", 200
 
 class GuestAPI(Resource):

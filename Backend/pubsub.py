@@ -14,7 +14,8 @@ class PubSub():
     def publishTopic(self, uuid):
         
         topic_id = uuid
+        data = bytes(topic_id, 'utf-8')
 
         publisher = pubsub_v1.PublisherClient()
         topic_path = publisher.topic_path(project_id, topic_id)
-        publisher.publish(topic_path, uuid)
+        publisher.publish(topic_path, data)
