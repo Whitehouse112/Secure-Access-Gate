@@ -37,11 +37,11 @@ class UserManager:
         except Exception as e:
             return 500
 
-    def addUser(self, email, password):
+    def addUser(self, email, password, nickname):
         try:
             with self.db.connect() as conn:
-                stmt = sqlalchemy.text("INSERT INTO Users (Email, Pwd) VALUES (:email, :pwd)")
-                return conn.execute(stmt, email=email, pwd=password)
+                stmt = sqlalchemy.text("INSERT INTO Users (Email, Pwd, Nickname) VALUES (:email, :pwd, :nickname)")
+                return conn.execute(stmt, email=email, pwd=password, nickname=nickname)
         except Exception as e:
             return 500
 

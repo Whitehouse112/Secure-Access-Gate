@@ -450,15 +450,24 @@ class UserAPI(Resource):
 class SigninUser(Resource):
     def post(self):
         
-        content = request.get_json()
-        user = userManager.checkUser(content['email'])
+        email = request.get_json()['email']
+        pwd = request.get_json()['password']
+        nickname = request.get_json()['nickname']
+        if email is None:
+            return "Invalid input data", 400
+        if pwd is None:
+            return "Invalid input data", 400
+        if nickname is None:
+            return "Invalid input data", 400
+
+        user = userManager.checkUser(email)
         if user == 500:
             return 'Internal server error', 500
         if user is not None:
             return 'User already exists', 409
 
-        hashed_password = generate_password_hash(content['password'], method='sha256') 
-        ret = userManager.addUser(content['email'], hashed_password)
+        hashed_password = generate_password_hash(pwd, method='sha256') 
+        ret = userManager.addUser(email, hashed_password, nickname)
         if ret == 500:
             return 'Internal server error', 500
         else:
