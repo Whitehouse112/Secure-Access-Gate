@@ -85,7 +85,7 @@ class ActivityAPI(Resource):
         if id_car is None:
             return 'Car not found', 404
 
-        gate = gateManager.checkGate(user, id_gate)['Location']
+        gate = gateManager.checkGate(user, id_gate)
         if gate == 500:
             return 'Internal server error', 500
         if gate is None:
@@ -99,7 +99,7 @@ class ActivityAPI(Resource):
         if token is None:
             return 'Token not found', 404
 
-        date_time = datetime.now()
+        date_time = datetime.datetime.now()
         date_time = date_time.strftime("%Y%m%d-%H%M%S")
         photo_name = f"guests_accesses/{id_gate}/{date_time}"
 
@@ -110,8 +110,8 @@ class ActivityAPI(Resource):
             return "Internal server error", 500
         if guest is not None:
             # Controllo la validità della scadenza dell'autorizzazione
-            current_datetime = datetime.strptime(date_time, '%Y%m%d-%H%M%S')
-            deadline = guest['Date_Time']
+            current_datetime = datetime.datetime.strptime(date_time, '%Y%m%d-%H%M%S')
+            deadline = guest['Deadline']
             if deadline < current_datetime:
                 #TODO: ritornare solo il messaggio di errore o notificare l'utente
                 # per autorizzare eventualmente l'ospite?
@@ -144,18 +144,13 @@ class ActivityAPI(Resource):
         if time_anomaly == 0:
             # Ottengo la lista delle ultime posizioni dell'utente e controllo le
             # anomalie in termini di incongruenze con l'attuale posizione
-            current_location = gateManager.checkGate(user, id_gate)['Location']
-            if current_location == 500:
-                return 'Internal server error', 500
-            if current_location is None:
-                return "Gate not found", 404
             locations = userManager.getLocations(user)
             if locations == 500:
                 return 'Internal server error', 500
             if len(locations) < 5:
                 location_anomaly = 0
             else:
-                location_anomaly = anomalyDetection.detect_locations(locations, current_location)
+                location_anomaly = anomalyDetection.detect_locations(locations, gate['Latitude'], gate['Longitude'])
         else:
             location_anomaly = 0
 
@@ -259,10 +254,19 @@ class CarAPI(Resource):
         else:
             return 'Success', 200
 
+    @token_required
+    def get(self, current_user):
+        
+        cars = carManager.getCars(current_user)
+        if cars == 500:
+            return 'Internal server error', 500
+
+        return {'cars':cars}, 200
+
 class UpdateFCM(Resource):
     @token_required
     def post(self, current_user):
-        fcm_token = request.get_json['fcm_token']
+        fcm_token = request.get_json()['fcm_token']
         if not fcm_token:
             return "Invalid input data", 400
         
@@ -271,14 +275,6 @@ class UpdateFCM(Resource):
             return 'Internal server error', 500
         else:
             return 'Success', 200
-
-    def get(self, current_user):
-        
-        cars = carManager.getCars(current_user)
-        if cars == 500:
-            return 'Internal server error', 500
-
-        return {'cars':cars}, 200
 
 class GateAPI(Resource):
     @token_required

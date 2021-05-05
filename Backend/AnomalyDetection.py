@@ -32,9 +32,9 @@ class AnomalyDetection():
         else:
             return 0
 
-    def detect_locations(self, locations_list, current_location):
+    def detect_locations(self, locations_list, current_latitude, current_longitude):
 
-        current_location = tuple(current_location['Latitude'] + current_location['Longitude'])
+        current_location = tuple(current_latitude + current_longitude)
         locations = [tuple(x['Latitude'] + x['Longitude']) for x in locations_list]
         times = [x['Date_Time'] for x in locations_list]
 
