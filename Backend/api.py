@@ -318,12 +318,14 @@ class GateAPI(Resource):
             ret = gateManager.addGate(current_user, id_gate, name, location, latitude, longitude, photo_url+photo_name)
             url_image = photo_url + photo_name
         else:
+            ret = pubsub.createTopic(id_gate)
+            if ret == 500:
+                return 'Internal server error', 500  
             ret = gateManager.addGate(current_user, id_gate, name, location, latitude, longitude, None)
         
         if ret == 500:
             return 'Internal server error', 500
         else:
-            pubsub.createTopic(id_gate)
             if url_image != "":
                return jsonify({'url_image': url_image}), 200
             else: 
