@@ -369,8 +369,11 @@ class OpenGateAPI(Resource):
         if gateManager.checkSensors(id_gate) is None:
             return "Invalid input data", 400
 
-        pubsub.publishTopic(id_gate)
-        return "Success", 200
+        ret = pubsub.publishTopic(id_gate)
+        if ret == 500:
+            return "Internal server error", 500
+        else:
+            return "Success", 200
 
 class GuestAPI(Resource):
     @token_required
