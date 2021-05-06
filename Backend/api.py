@@ -266,6 +266,18 @@ class CarAPI(Resource):
         if cars == 500:
             return 'Internal server error', 500
 
+        for car in cars:
+            car['Deadline'] = 'null'
+            car['Nickname'] = 'null'
+            guest = userManager.checkGuest(car['ID'])
+            
+            if guest == 500:
+                return 'Internal server error', 500
+                
+            if guest is not None:
+                car['Deadline'] = guest['Deadline'].strftime("%Y-%m-%d %H:%M:%S")
+                car['Nickname'] = guest['Nickname']
+
         return {'cars':cars}, 200
 
 class UpdateFCM(Resource):
