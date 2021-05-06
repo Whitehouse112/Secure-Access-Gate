@@ -21,7 +21,7 @@ app.config['SECRET_KEY'] = 'Secret'
 basePath = '/api/v1'
 photo_url = "https://storage.googleapis.com/secure-access-photos/"
 #TODO: eliminare prima di caricare su cloud
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="files/key.json"
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="files/key.json"
 
 activityManager = ActivityManager()
 anomalyDetection = AnomalyDetection()
