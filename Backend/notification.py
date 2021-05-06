@@ -9,7 +9,11 @@ class Notification:
 
     def sendToTopic(self, topic, title, body):
 
-        self.push_service.notify_topic_subscribers(topic, message_title=title, message_body=body)
+        try:
+            self.push_service.notify_topic_subscribers(topic, message_title=title, message_body=body)
+            return None
+        except Exception as e:
+            return 500
 
     def sendToDevice(self, token, title, body, data):
 

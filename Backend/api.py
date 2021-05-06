@@ -83,6 +83,7 @@ class ActivityAPI(Resource):
         if id_car == 500:
             return 'Internal server error', 500
         if id_car is None:
+            #TODO: mandare notifica macchina sconosciuta
             return 'Car not found', 404
 
         gate = gateManager.checkGate(user, id_gate)
@@ -206,13 +207,15 @@ class ActivityAPI(Resource):
                 return "Invalid input data", 400
 
             # ex: [Via Ippolito Nievo, 112, 41124 Modena MO, Italy]
-            location = gate['Locartion']
+            location = gate['Location']
             location = location.split(",")
             cap = location[2].split(" ")[0]
             topic = f"{location[0]} {cap}"
             title = "Allerta vicinato"
             body = f"Segnalazione sospetta in {location[0]}"
-            notification.sendToTopic(topic, title, body)
+            ret = notification.sendToTopic(topic, title, body)
+            if ret == 500:
+                return "Internal server error", 500
         return "Success", 200
 
     @token_required
