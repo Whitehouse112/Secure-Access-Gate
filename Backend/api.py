@@ -409,16 +409,16 @@ class GuestAPI(Resource):
         else:
             return 'Success', 200
 
-    @token_required
-    def get(self, current_user):
+    # @token_required
+    # def get(self, current_user):
 
-        guests = userManager.getGuests(current_user)
-        if guests == 500:
-            return "Internal server error", 500
-        if guests is None:
-            return "No Guests found", 404
+    #     guests = userManager.getGuests(current_user)
+    #     if guests == 500:
+    #         return "Internal server error", 500
+    #     if guests is None:
+    #         return "No Guests found", 404
         
-        return {'guests':guests}, 200
+    #     return {'guests':guests}, 200
 
 class RefreshJWT(Resource):
     def post(self):
@@ -432,6 +432,8 @@ class RefreshJWT(Resource):
             current_user = data['user']
 
             user = userManager.getUser(current_user)
+            if user == 500:
+                return "Internal server error", 500
             if user is None:
                 return "User not found", 404
             if (user['Jwt_refresh'] != token):
