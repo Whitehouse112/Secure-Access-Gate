@@ -7,10 +7,10 @@ class Notification:
         #TODO: cambiare api_key con una generata nel progetto cloud
         self.push_service = FCMNotification(api_key="AAAAxL7lTsI:APA91bEsVnNzbVM2cZ2rbkl05xSYf7IVMayZpszta2QiCCqgP-8TvtDMzvkQLuQxPJuAlApXRLQQJMsBzH2a7hg9FTboUMNtAmDQktvdjp-_LNk7x7NfzsiE71ETxSd1OknVmlexum3h")
 
-    def sendToTopic(self, topic, title, body):
+    def sendToTopic(self, topic, title, body, data):
 
         try:
-            self.push_service.notify_topic_subscribers(topic, message_title=title, message_body=body)
+            self.push_service.notify_topic_subscribers(topic, message_title=title, message_body=body, data_message=data)
             return None
         except Exception as e:
             return 500

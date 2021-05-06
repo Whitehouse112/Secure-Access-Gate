@@ -126,7 +126,7 @@ class ActivityAPI(Resource):
             # Notifico l'utente sull'accesso da parte dell'ospite
             title = "Nuovo accesso rilevato"
             body = f"L'utente {guest['Nickname']} ha effettuato l'accesso al cancello '{gate_name}'"
-            data = {"id_gate":id_gate}
+            data = {"id_gate":id_gate, "type":"guest"}
             notification.sendToDevice(token, title, body, data)
             
             ret = activityManager.addGuestActivity(user, id_gate, id_car, 'Granted', photo_url+photo_name)
@@ -168,7 +168,7 @@ class ActivityAPI(Resource):
             # Notifico l'utente sullo stato dell'accesso in 'Pending'
             title = "Nuovo accesso rilevato"
             body = f"Tentativo di accesso al cancello '{gate_name}': autorizzare l'accesso?"
-            data = {"id_gate":id_gate}
+            data = {"id_gate":id_gate, "type":"anomaly"}
             notification.sendToDevice(token, title, body, data)
         else:
             outcome = 'Granted'
@@ -192,10 +192,6 @@ class ActivityAPI(Resource):
             return 'Internal server error', 500
         if last_activity is None:
             return'No activity found', 404
-
-        ret = activityManager.updateActivity(current_user, id_gate, last_activity['Date_Time'], status, outcome)
-        if ret == 500:
-            return "Internal server error", 500
         
         if outcome == 'Granted':
             pubsub.publishTopic(bytes(id_gate, 'utf-8'))
@@ -209,13 +205,19 @@ class ActivityAPI(Resource):
             # ex: [Via Ippolito Nievo, 112, 41124 Modena MO, Italy]
             location = gate['Location']
             location = location.split(",")
-            cap = location[2].split(" ")[0]
-            topic = f"{location[0]} {cap}"
+            cap = location[2].strip().split(" ")[0]
+            topic = f"{location[0].replace(' ', '-')}-{cap}"
             title = "Allerta vicinato"
             body = f"Segnalazione sospetta in {location[0]}"
-            ret = notification.sendToTopic(topic, title, body)
+            data = {"type": "alert"}
+            ret = notification.sendToTopic(topic, title, body, data)
             if ret == 500:
                 return "Internal server error", 500
+        
+        ret = activityManager.updateActivity(current_user, id_gate, last_activity['Date_Time'], status, outcome)
+        if ret == 500:
+            return "Internal server error", 500
+
         return "Success", 200
 
     @token_required
@@ -425,20 +427,20 @@ class RefreshJWT(Resource):
         jwt_expiry = jwt.encode({'user':current_user, 'exp':datetime.datetime.utcnow() + datetime.timedelta(hours=24)}, app.config['SECRET_KEY'])
         return jsonify({'jwt_token_expiry':jwt_expiry})
 
-class NotificationAPI(Resource):
-    @token_required
-    def post(self, current_user):
+# class NotificationAPI(Resource):
+#     @token_required
+#     def post(self, current_user):
 
-        location = request.get_json()['Location']
-        if location is None:
-            return "Invalid input data", 400
+#         location = request.get_json()['Location']
+#         if location is None:
+#             return "Invalid input data", 400
         
-        location = location.replace(" ", "")
-        location = location.split(',')
-        topic = location[0] + "-" + location[2]
-        title = "Segnalazione"
-        body = f"Segnalazione utente sospetto nel quartiere {topic}"
-        notification.sendToTopic(topic, title, body)
+#         location = location.replace(" ", "")
+#         location = location.split(',')
+#         topic = location[0] + "-" + location[2]
+#         title = "Segnalazione"
+#         body = f"Segnalazione utente sospetto nel quartiere {topic}"
+#         notification.sendToTopic(topic, title, body)
 
 class UserAPI(Resource):
     @token_required
@@ -547,7 +549,7 @@ api.add_resource(GateAPI, f'{basePath}/gate')
 api.add_resource(OpenGateAPI, f'{basePath}/gate/open')
 api.add_resource(GuestAPI, f'{basePath}/guest')
 api.add_resource(RefreshJWT, f'{basePath}/jwt')
-api.add_resource(NotificationAPI, f'{basePath}/notification')
+# api.add_resource(NotificationAPI, f'{basePath}/notification')
 api.add_resource(UserAPI, f'{basePath}/user')
 api.add_resource(SigninUser, f'{basePath}/user/signin')
 api.add_resource(LoginUser, f'{basePath}/user/login')
