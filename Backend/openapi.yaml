@@ -7,10 +7,13 @@ info:
 host: "quiet-groove-306310.appspot.com"
 basePath: "/api/v1"
 tags:
-- name: "gate"
-  description: "Everything about your Gates"
+
 - name: "activity"
   description: "Access to Gate Activities"
+- name: "car"
+  description: "Access to Cars"
+- name: "gate"
+  description: "Everything about your Gates"
 - name: "user"
   description: "Operations about user"
 
@@ -18,57 +21,7 @@ schemes:
 - "https"
 - "http"
 paths:
-  /gate:
-    get:
-      tags:
-      - "gate"
-      summary: "Get all Gates of the user"
-      security:
-        - jwt: []
-      operationId: "getGate"
-      responses:
-        200:
-          description: "Success"
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Gate'
-        401:
-          description: "Token is missing or invalid"
-        404:
-          description: "No Gate found"
-        400:
-          description: "Invalid input data"
-
-    post:
-      tags:
-       - "gate"
-      summary: "Add a new Gate for the user"
-      security:
-        - jwt: []
-      operationId: "addGate"
-      consumes:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: gateInfo
-        in: body
-        description: "All gate Information"
-        required: True
-        schema:
-          $ref: '#/definitions/Gate'
-        
-      responses:
-        200:
-          description: "Sucess"
-        400:
-          description: "Invalid input data"
-        401:
-          description: "Token is missing or invalid"
-        409:
-          description: "Gate already exist"
-        500:
-          description: "Internal server error"
+  
           
   /activity:
     get:
@@ -78,13 +31,23 @@ paths:
       security:
         - jwt: []
       operationId: "getActivities"
+      produces:
+      - "application/json"
+      - "application/xml"
       responses:
         200:
           description: "Success"
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Activity'
+            type: object
+            properties:
+              activities:
+                type: array
+                items:
+                  $ref: '#/definitions/Activity'
+              guests_activities:
+                type: array
+                items:
+                  $ref: '#/definitions/Activity'
         400:
           description: "Invalid input data"
         401:
@@ -108,7 +71,7 @@ paths:
           description: "All activity information"
           required: True
           schema:
-            $ref: '#/definitions/Activity'
+            $ref: '#/definitions/Access'
       responses:
         200:
           description: "Success"
@@ -116,8 +79,6 @@ paths:
           description: "Invalid input data"
         401:
           description: "Token is missing or invalid"
-        409:
-          description: "Activity already exists"
         500:
           description: "Internal server error"
 
@@ -137,9 +98,10 @@ paths:
           schema:
             type: object
             properties:
-              activityId:
+              id_gate:
                 description: "New status of the activity"
                 type: string
+                format: uuid
               status:
                 $ref: '#/definitions/Status'
       responses:
@@ -154,6 +116,207 @@ paths:
         500:
           description: "Internal server error"
           
+  /car:
+    get:
+      tags:
+      - "car"
+      summary: "Get all Cars and Special Rules of the user"
+      security:
+        - jwt: []
+      operationId: "getCars"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: object
+            properties:
+              cars:
+                type: array
+                items:
+                  $ref: '#/definitions/Car'
+
+        401:
+          description: "Token is missing or invalid"
+        500:
+          description: "Internal server error"
+
+    post:
+      tags:
+      - "car"
+      summary: "Add a Car of the user"
+      security:
+        - jwt: []
+      operationId: "addCar"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      parameters:
+        - name: carInfo
+          in: body
+          description: "All car information"
+          required: True
+          schema:
+            $ref: '#/definitions/UserCar'
+      responses:
+        200:
+          description: "Success"
+        400:
+          description: "Invalid input data"
+        401:
+          description: "Token is missing or invalid"
+        409:
+          description: "Car already exists"
+        500:
+          description: "Internal server error"
+          
+  /gate:
+    get:
+      tags:
+      - "gate"
+      summary: "Get all Gates of the user"
+      security:
+        - jwt: []
+      operationId: "getGate"
+      produces:
+      - "application/json"
+      - "application/xml"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: object
+            properties:
+              gates:
+                type: array
+                items:
+                  $ref: '#/definitions/Gate'
+        401:
+          description: "Token is missing or invalid"
+        404:
+          description: "No Gate found"
+        500:
+          description: "Internal server error"
+
+    post:
+      tags:
+       - "gate"
+      summary: "Add a new Gate for the user"
+      security:
+        - jwt: []
+      operationId: "addGate"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: gateInfo
+        in: body
+        description: "All gate Information"
+        required: True
+        schema:
+          $ref: '#/definitions/NewGate'
+        
+      responses:
+        200:
+          description: "Sucess"
+        400:
+          description: "Invalid input data"
+        401:
+          description: "Token is missing or invalid"
+        409:
+          description: "Gate already exist"
+        500:
+          description: "Internal server error"
+          
+  /gate/open:
+    post:
+      tags:
+       - "gate"
+      summary: "Open the gate for the user"
+      security:
+        - jwt: []
+      operationId: "openGate"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: gateInfo
+        in: body
+        description: "The gate to open"
+        required: True
+        schema:
+          type: object
+          properties:
+            id_gate:
+              type: string
+              format: uuid
+      responses:
+        200:
+          description: "Sucess"
+        400:
+          description: "Invalid input data"
+        401:
+          description: "Token is missing or invalid"
+        500:
+          description: "Internal server error"
+          
+  /guest:
+    post:
+      tags:
+       - "car"
+      summary: "Add a new special rule for a guest"
+      security:
+        - jwt: []
+      operationId: "addRule"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: ruleInfo
+        in: body
+        description: "All special rule Information"
+        required: True
+        schema:
+          $ref: '#/definitions/GuestCar'
+        
+      responses:
+        200:
+          description: "Sucess"
+        400:
+          description: "Invalid input data"
+        401:
+          description: "Token is missing or invalid"
+        500:
+          description: "Internal server error"
+          
+  /user:
+    get:
+      tags:
+      - "user"
+      summary: "Get all user info"
+      security:
+        - jwt: []
+      operationId: "getuser"
+      produces:
+      - "application/json"
+      - "application/xml"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: object
+            properties:
+              user:
+                $ref: '#/definitions/User'
+        401:
+          description: "Token is missing or invalid"
+        404:
+          description: "User not found"
+        500:
+          description: "Internal server error"
+          
   /user/signin:
     post:
       tags:
@@ -161,15 +324,15 @@ paths:
       summary: "Create a user"
       operationId: "createUser"
       consumes:
-      - "application/xml"
       - "application/json"
+      - "application/xml"
       parameters:
-      - in: "body"
-        name: "body"
+      - in: body
+        name: accountInfo
         description: "Created user object"
         required: True
         schema:
-          $ref: "#/definitions/User"
+          $ref: "#/definitions/NewUser"
       responses:
         200:
           description: "Success"
@@ -177,6 +340,8 @@ paths:
           description: "Invalid input data"
         409:
           description: "User laready exists"
+        500: 
+          description: "Internal server error"
 
   /user/login:
     get:
@@ -184,38 +349,27 @@ paths:
       - "user"
       summary: "Logs user into the system"
       operationId: "loginUser"
+      security:
+        - auth: []
       produces:
-      - "application/xml"
       - "application/json"
-      parameters:
-      - name: "username"
-        in: "query"
-        description: "The user name for login"
-        required: True
-        type: "string"
-      - name: "password"
-        in: "query"
-        description: "The password for login in clear text"
-        required: True
-        type: "string"
+      - "application/xml"
       responses:
         200:
           description: "Success"
           schema:
-            type: "string"
-          headers:
-            X-Rate-Limit:
-              type: "integer"
-              format: "int32"
-              description: "calls per hour allowed by the user"
-            X-Expires-After:
-              type: "string"
-              format: "date-time"
-              description: "date in UTC when token expires"
+            type: object
+            properties:
+              jwt_token:
+                type: string
+              jwt_token_expiry:
+                type: string
         400:
           description: "Invalid input data"
         401:
           description: "Invalid username/password supplied"
+        500:
+          description: "Internal server error"
           
   /user/logout:
     get:
@@ -228,10 +382,10 @@ paths:
       responses:
         200:
           description: "Success"
-        404:
-          description: "User not foud"
         401:
           description: "Token is missing or invalid"
+        404:
+          description: "User not foud"
         500:
           description: "Internal server error"
   
@@ -262,82 +416,34 @@ paths:
           description: "Token is missing or invalid"
         404:
           description: "User not found"
-        409:
-          description: "Location alredy exists"
         500:
           description: "Internal server error"
           
-  /user/{username}:
-    get:
-      tags:
-      - "user"
-      summary: "Get user by user name"
-      description: ""
-      operationId: "getUserByName"
-      produces:
-      - "application/xml"
+  /fcm:
+    post:
+      description: "Update the FCM token"
+      operationId: "updateFCM"
+      consumes:
       - "application/json"
+      - "application/xml"
       parameters:
-      - name: "username"
-        in: "path"
-        description: "The name that needs to be fetched. Use user1 for testing. "
-        required: true
-        type: "string"
-      responses:
-        "200":
-          description: "successful operation"
+        - name: FCMtoken
+          in: body
           schema:
-            $ref: "#/definitions/User"
-        "400":
-          description: "Invalid username supplied"
-        "404":
-          description: "User not found"
-    put:
-      tags:
-      - "user"
-      summary: "Updated user"
-      description: "This can only be done by the logged in user."
-      operationId: "updateUser"
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "name that need to be updated"
-        required: true
-        type: "string"
-      - in: "body"
-        name: "body"
-        description: "Updated user object"
-        required: true
-        schema:
-          $ref: "#/definitions/User"
+            type: object
+            properties:
+              fcm_token:
+                type: string
       responses:
-        "400":
-          description: "Invalid user supplied"
-        "404":
-          description: "User not found"
-    delete:
-      tags:
-      - "user"
-      summary: "Delete user"
-      description: "This can only be done by the logged in user."
-      operationId: "deleteUser"
-      produces:
-      - "application/xml"
-      - "application/json"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "The name that needs to be deleted"
-        required: true
-        type: "string"
-      responses:
-        "400":
-          description: "Invalid username supplied"
-        "404":
-          description: "User not found"
+        200:
+          description: "Success"
+        400:
+          description: "Invalid input data"
+        401:
+          description: "Token is invalid"
+        500:
+          description: "Internal server error"
+    
 
   /jwt:
     post:
@@ -350,7 +456,10 @@ paths:
         - name: jwtRefreshToken
           in: body
           schema:
-            type: string
+            type: object
+            properties:
+              jwt_refresh:
+                type: string
 
       responses:
         200:
@@ -359,17 +468,17 @@ paths:
           description: "Invalid input data"
         401:
           description: "Token is invalid"
+        404:
+          description: "User not found"
+        500:
+          description: "Internal server error"
         
 
 
 securityDefinitions:
   auth:
-    type: "oauth2"
-    authorizationUrl: "http://secureaccessgate.appcompact.com/oauth/dialog"
-    flow: "implicit"
-    scopes:
-      write:pets: "modify pets in your account"
-      read:pets: "read your pets"
+    type: basic
+
   jwt:
     type: "apiKey"
     name: "jwt_token"
@@ -379,72 +488,181 @@ definitions:
   Gate:
     type: object
     properties:
+      ID:
+        type: string
+        format: uuid
+      ID_User:
+        type: integer
+      Name:
+        type: string
+        maxLength: 30
+      Location:
+        type: string
+      Photo:
+        $ref: '#/definitions/ImageURL'
+        
+  NewGate:
+    type: object
+    properties:
+      id_gate:
+        type: string
+        format: uuid
       name:
         type: string
-        maxLength: 16
+        maxLength: 30
       location:
         type: string
-      status:
+      latitude:
         type: string
-        description: "Order status"
-        enum:
-        - "open"
-        - "closed"
-        - "undefined"
-      id:
+      longitude:
         type: string
-      owner:
+      photo:
+        $ref: '#/definitions/Image'
+        
+  Access:
+    type: object
+    properties:
+      photo:
+        $ref: '#/definitions/Image'
+      id_gate:
         type: string
+        format: uuid
+      license:
+        type: string
+        pattern: "^[A-Z]{2}[0-9]{3}[A-Z]{2}$"
+      color:
+        $ref: '#/definitions/Color'
+        
         
   Activity:
     type: object
     properties:
-      image:
-        $ref: '#/definitions/Image'
-      access:
-        $ref: '#/definitions/Status'
-      datetime:
+      ID_User:
+        type: integer
+      ID_Gate:
+        type: string
+        format: uuid
+      ID_Car:
+        type: integer
+      Date_Time:
         type: string
         format: date-time
-      gate:
-        $ref: '#/definitions/Gate'
+      Outcome:
+        $ref: '#/definitions/Status'
+      Photo:
+        $ref: '#/definitions/ImageURL'
         
-  Image:
+  Car:
     type: object
     properties:
-      image:
+      ID:
+        type: integer
+      Plate:
         type: string
-        format: byte #64base encoded
+        pattern: "^[A-Z]{2}[0-9]{3}[A-Z]{2}$"
+      Brand:
+        type: string
+      Color:
+        $ref: '#/definitions/Color'
+      ID_User:
+        type: integer
+      Deadline:
+        type: string
+        format: date-time
+      Nickname:
+        type: string
+        
+  UserCar:
+    type: object
+    properties:
+      license:
+        type: string
+        pattern: "^[A-Z]{2}[0-9]{3}[A-Z]{2}$"
+      brand:
+        type: string
+      color:
+        $ref: '#/definitions/Color'
+        
+  GuestCar:
+    type: object
+    properties:
+      nickname:
+        type: string
+      dead_line:
+        type: string
+        format: date-time
+    allOf:
+      - $ref: '#/definitions/UserCar'
+      
+  User:
+    type: object
+    properties:
+      ID:
+        type: integer
+      Email:
+        type: string
+        format: email
+      PWD:
+        type: string
+      Nickname:
+        type: string
+      Jwt_refresh:
+        type: string
+      FCM_token:
+        type: string
+      Photo:
+        $ref: '#/definitions/ImageURL'
+        
+  NewUser:
+    type: object
+    properties:
+      nickname:
+        type: string
+      email:
+        type: string
+        format: email
+      password:
+        type: string
+        
+  ImageURL:
+    type: string
+        
+  Image:
+      type: string
+      format: byte #64base encoded
         
   Status:
     type: string
     description: "Outcome of the activity"
     enum:
-    - "granted"
-    - "denied"
-    - "ignored"
-    - "pending"
-    - "reported"
+    - "Granted"
+    - "Denied"
+    - "Ignored"
+    - "Pending"
+    - "Reported"
+    
+  Color:
+    type: string
+    description: "Possible recognized car color"
+    enum:
+    - "Black"
+    - "Blue"
+    - "Cyan"
+    - "Green"
+    - "Gray"
+    - "Red"
+    - "White"
+    - "Yellow"
     
   Location:
     type: object
     properties:
+      altitude:
+        type: string
+        maxLength: 16
       latitude:
         type: string
         maxLength: 16
       longitude:
         type: string
         maxLength: 16
-      datetime:
-        type: string
-        format: date-time
-
-  User:
-    type: "object"
-    properties:
-      email:
-        type: "string"
-      password:
-        type: "string"
-    xml:
-      name: "User"
