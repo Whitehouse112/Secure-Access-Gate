@@ -99,7 +99,7 @@ class ActivityAPI(Resource):
         if id_car is None:
             title = "Tentativo di accesso rilevato"
             body = f"Una macchina è stata rilevata al cancello '{gate_name}'"
-            data = {"id_gate":id_gate, "type":"guest"}
+            data = {"id_gate":id_gate, "type":"anomaly"}
             notification.sendToDevice(token, title, body, data)
             return 'Car not found', 404
 
