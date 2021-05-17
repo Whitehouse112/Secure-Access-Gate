@@ -79,13 +79,6 @@ class ActivityAPI(Resource):
         if user is None:
             return 'User not found', 404
 
-        id_car = carManager.checkCar(user, license_plate, color)['ID']
-        if id_car == 500:
-            return 'Internal server error', 500
-        if id_car is None:
-            #TODO: mandare notifica macchina sconosciuta
-            return 'Car not found', 404
-
         gate = gateManager.checkGate(user, id_gate)
         if gate == 500:
             return 'Internal server error', 500
@@ -99,6 +92,16 @@ class ActivityAPI(Resource):
             return 'Internal server error', 500
         if token is None:
             return 'Token not found', 404
+
+        id_car = carManager.checkCar(user, license_plate, color)['ID']
+        if id_car == 500:
+            return 'Internal server error', 500
+        if id_car is None:
+            title = "Tentativo di accesso rilevato"
+            body = f"Una macchina è stata rilevata al cancello '{gate_name}'"
+            data = {"id_gate":id_gate, "type":"guest"}
+            notification.sendToDevice(token, title, body, data)
+            return 'Car not found', 404
 
         date_time = datetime.datetime.now()
         date_time = date_time.strftime("%Y%m%d-%H%M%S")
