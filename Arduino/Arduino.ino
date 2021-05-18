@@ -11,10 +11,9 @@ BluetoothSerial SerialBT;
 
 // pins
 const int outPin=33;
-const int sensorPin = 13;
 const int flashPin = 4;
-const int lcdGPin = 2;
-const int lcdEPin = 12;
+const int sensorPin = 13;
+const int gatePin = 12;
 
 // input symbol
 // 0:released, 1:pressed
@@ -34,13 +33,8 @@ void setup() {
     
   pinMode(outPin, OUTPUT);
   pinMode(flashPin, OUTPUT);
-  pinMode(lcdGPin, OUTPUT);
-  pinMode(lcdEPin, OUTPUT);
+  pinMode(gatePin, OUTPUT);
   pinMode(sensorPin, INPUT);
-
-  // close gate
-  digitalWrite(lcdEPin, HIGH);
-  digitalWrite(lcdGPin, LOW);
   
   // initial state
   iState = 0;
@@ -63,16 +57,13 @@ void callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param) {
   
     if (paramInt == 0 and busy == 0 and digitalRead(sensorPin) == 0){
       Serial.printf("\n%d: sending another image", paramInt);
-      delay(2000);
       capture();
     }
     if (paramInt == 1){
       Serial.printf("\n%d: opening gate", paramInt);
-      controlGate(paramInt);
-    }
-    if (paramInt == 2){
-      Serial.printf("\n%d: closing gate", paramInt);
-      controlGate(paramInt);
+      digitalWrite(gatePin, HIGH);
+      delay(1000);
+      digitalWrite(gatePin, LOW);
     }
   }
 }
@@ -179,7 +170,7 @@ void writeSerialBT(camera_fb_t *fb){
 }
 
 void controlGate(int action){
-  // open gate
+
   if (action == 1){
     digitalWrite(lcdEPin, LOW);
     //for (int i = 0; i < 90; i++){
