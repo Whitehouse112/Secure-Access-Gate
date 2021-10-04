@@ -17,7 +17,6 @@ import pubsub
 
 app = Flask(__name__)
 api = Api(app)
-app.config['SECRET_KEY'] = 'Secret'
 basePath = '/api/v1'
 photo_url = "https://storage.googleapis.com/secure-access-photos/"
 #TODO: eliminare prima di caricare su cloud
