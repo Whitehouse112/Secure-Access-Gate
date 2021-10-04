@@ -28,7 +28,6 @@ def init_tcp_connection_engine(db_config):
     db_user = "sqlserver"
     db_pass = "sH8Z3wQnqmWYhfF"
     db_name = "IoT_db"
-    db_public_host = "35.243.223.99"
     db_private_host = "10.20.128.3:1433"
     #ssl_args = {'ssl_ca': 'ssl/server-ca.pem'}
 
@@ -47,9 +46,7 @@ def init_tcp_connection_engine(db_config):
             username=db_user,
             password=db_pass,
             database=db_name,
-            host=db_public_host,
-            #host=db_hostname,
-            #port=db_port
+            host=db_private_host,
         ),
         **db_config,
     )
