@@ -7,7 +7,6 @@ from google.cloud import pubsub_v1
 
 project_id='quiet-groove-306310'
 URL = 'http://127.0.0.1:5000/api/v1/activity'
-#TODO: eliminare la chiave prima di caricare su cloud
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="files/key.json"
 dir_path = os.path.dirname(os.path.realpath(__file__))
 model_path = f"{dir_path}\\files\\vehicle_color_haze_free_model.h5"
